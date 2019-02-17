@@ -6,7 +6,7 @@
     <title>とし部屋@SSBU</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href="https://use.fontawesome.com/releases/v5.1.0/css/all.css" rel="stylesheet">
-    <link rel="stylesheet" type="text/css" media="screen" href="/static/main.css?1" />
+    <link rel="stylesheet" type="text/css" media="screen" href="/static/main.css?2" />
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
 </head>
@@ -24,7 +24,17 @@
             v-bind:room="room"
         ></room-list>
     </div>
-    <script src="/static/main.js?2"></script>
-    <footer>2019</footer>
+    <script src="/static/main.js?3"></script>
+    <hr>
+    <footer>
+        <h3>使い方</h3>
+        ・必要事項を入力して「部屋をリストに追加」を押すと追加できます。<br>
+        ・ページを更新しなくても、リストの内容は常に更新されます。<br>
+        ・リストの「+」「-」ボタンは、編集用パスが一致する場合に押すことができます。<br>
+        ・つまり、基本的には部屋を立てた人がその後を管理してください。<br>
+        ・人数が1人になっているときに「-」を押すと部屋を消すことができます。<br>
+        ・荒らされることは考えてないので良心的に楽しく使ってください。<br>
+        2019/02/17
+    </footer>
 </body>
 </html>

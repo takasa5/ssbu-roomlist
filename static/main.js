@@ -13,52 +13,62 @@ if (document.cookie != '') {
         arr[data[0]] = decodeURIComponent(data[1]);
     }
 }
+var roomListTemp = `
+<div class="room-list">
+    <div class="icon">
+        <img :src="room.icon">
+    </div>
+    <div class="power">{{ room.power }}<span v-if="room.power != ''">万</span></div>
+    <div class="id">{{ room.id }}</div>
+    <div class="pass">{{ room.pass }}</div>
+    <div class="style">
+        <span v-if="checkDevice() == 'pc'">{{ room.style }}</span>
+            <span v-else>
+            <span v-if="room.style.length > 4">{{ room.style[0] + room.style[1] + room.style[2] }}</span>
+            <span v-else>{{ room.style }}</span>
+        </span>
+    </div>
+    <div class="rule">
+        <i v-if="room.rule == 'ストック制'" class="fas fa-user"></i>
+        <i v-if="room.rule == 'タイム制'" class="far fa-clock"></i>
+        <span v-show="checkDevice() == 'pc'">{{ room.rule }}</span>
+        <span v-if="room.rule == 'ストック制'">({{ room.stock }})</span>
+    </div>
+    <div class="time">{{ room.time }}分</div>
+    <div class="ic">{{ room.ic }}</div>
+    <div class="overview">{{ room.overview }}</div>
+    <div class="stage">
+        <span v-if="checkDevice() == 'pc'">{{ room.stage }}</span>
+        <span v-else>
+            {{ room.stage[0] }}
+        </span>
+    </div>
+    <div class="space">{{ room.member }}<button @click="addMember">+</button><button @click="subMember">-</button><br>/{{ room.capacity }}</div>
+    <div class="change">
+        <span v-if="room.change != ''">
+            <span v-if="checkDevice() == 'pc'">{{ room.change }}</span>
+            <span v-else>
+                {{ room.change[0] + room.change[4] }}
+            </span>
+        </span>
+    </div>
+</div>
+`;
+
+function checkDevice() {
+    var ua = window.navigator.userAgent.toLowerCase();
+    if (ua.indexOf("phone") != -1 || ua.indexOf("android") != -1 || ua.indexOf("ipod") != -1 || ua.indexOf("ipad") != -1 || ua.indexOf("tab") != -1)
+        return "phone";
+    else
+        return "pc";
+}
 
 var c = Vue.component('room-list', {
     props: ['room'],
-    template: `
-        <div class="room-list">
-            <div class="icon">
-                <img :src="room.icon">
-            </div>
-            <div class="power">{{ room.power }}<span v-if="room.power != ''">万</span></div>
-            <div class="id">{{ room.id }}</div>
-            <div class="pass">{{ room.pass }}</div>
-            <div class="style">
-                <span v-if="checkDevice() == 'pc'">{{ room.style }}</span>
-                <span v-else>
-                    <span v-if="room.style.length > 4">{{ room.style[0] + room.style[1] + room.style[2] }}</span>
-                    <span v-else>{{ room.style }}</span>
-                </span>
-            </div>
-            <div class="rule">
-                <i v-if="room.rule == 'ストック制'" class="fas fa-user"></i>
-                <i v-if="room.rule == 'タイム制'" class="far fa-clock"></i>
-                <span v-show="checkDevice() == 'pc'">{{ room.rule }}</span></div>
-            <div class="time">{{ room.time }}分</div>
-            <div class="ic">{{ room.ic }}</div>
-            <div class="overview">{{ room.overview }}</div>
-            <div class="stage">
-                <span v-if="checkDevice() == 'pc'">{{ room.stage }}</span>
-                <span v-else>
-                    {{ room.stage[0] }}
-                </span>
-            </div>
-            <div class="space">{{ room.member }}<button @click="addMember">+</button><button @click="subMember">-</button><br>/{{ room.capacity }}</div>
-            <div class="change">
-                <span v-if="checkDevice() == 'pc'">{{ room.change }}</span>
-                <span v-else>
-                    {{ room.change[0] + room.change[4] }}
-                </span>
-            </div>
-        </div>`,
+    template: roomListTemp,
     methods: {
         checkDevice: function () {
-            var ua = window.navigator.userAgent.toLowerCase();
-            if (ua.indexOf("phone") != -1 || ua.indexOf("android") != -1 || ua.indexOf("ipod") != -1)
-                return "phone";
-            else
-                return "pc";
+            return checkDevice();
         },
         addMember: function () {
             if (this.room.member >= this.room.capacity)
@@ -86,6 +96,7 @@ var sample = new Vue({
         id: "",
         pass: "",
         style: "",
+        stock: "",
         rule: "",
         time: "",
         ic: "",
@@ -96,9 +107,13 @@ var sample = new Vue({
         capacity: "",
         editpass: "",
         images: images,
+        change: "",
         uuid: ""
     },
     methods: {
+        checkDevice: function () {
+            return checkDevice();
+        },
         submit: function (event) {
             socket.emit("create", {
                 icon: this.icon,
@@ -106,6 +121,7 @@ var sample = new Vue({
                 id: this.id,
                 pass: this.pass,
                 style: this.style,
+                stock: this.stock,
                 rule: this.rule,
                 time: this.time,
                 ic: this.ic,
@@ -165,6 +181,14 @@ var sample = new Vue({
             <td>
                 <input v-model="rule" type="radio" name="rule" value="ストック制" required>ストック制
                 <input v-model="rule" type="radio" name="rule" value="タイム制">タイム制
+            </td>
+        </tr>
+        <tr v-if="rule == 'ストック制'">
+            <td class="ftdc">
+                <b>*ストック</b>
+            </td>
+            <td>
+                <input v-model="stock" type="number" name="stock" min="1" max="5" required>
             </td>
         </tr>
         <tr>
@@ -255,22 +279,24 @@ var sample = new Vue({
     </table>
 
     <p style="text-align:center; margin-bottom: 0">投稿サンプル</p><br>
-    <div class="room-list">
-        <div class="icon">
-            <img :src="icon">
-        </div>
-        <div class="power">{{ power }}</div>
-        <div class="id">{{ id }}</div>
-        <div class="pass">{{ pass }}</div>
-        <div class="style">{{ style }}</div>
-        <div class="rule">{{ rule }}</div>
-        <div class="time">{{ time }}</div>
-        <div class="ic">{{ ic }}</div>
-        <div class="overview">{{ overview }}</div>
-        <div class="stage">{{ stage }}</div>
-        <div class="space">1/{{ capacity }}</div>
-        <div class="change">{{ change }}</div>
-    </div>
+    ` + roomListTemp.replace(/room\./g, "").replace('<button @click=\"addMember\">+</button><button @click=\"subMember\">-</button>', "")
+    // <div class="room-list">
+    //     <div class="icon">
+    //         <img :src="icon">
+    //     </div>
+    //     <div class="power">{{ power }}</div>
+    //     <div class="id">{{ id }}</div>
+    //     <div class="pass">{{ pass }}</div>
+    //     <div class="style">{{ style }}</div>
+    //     <div class="rule">{{ rule }}</div>
+    //     <div class="time">{{ time }}</div>
+    //     <div class="ic">{{ ic }}</div>
+    //     <div class="overview">{{ overview }}</div>
+    //     <div class="stage">{{ stage }}</div>
+    //     <div class="space">1/{{ capacity }}</div>
+    //     <div class="change">{{ change }}</div>
+    // </div>
+    + `
     <div style="text-align:center">
         <input v-show="id == '' || style == '' || rule == '' || time == '' || ic == '' || stage == '' || capacity == '' || change == '' || editpass == ''"
             type="submit" value="部屋をリストに追加">
@@ -302,7 +328,7 @@ var app = new Vue({
             // }
         ]
     }
-})  
+})
 
 socket.on("created", function (data) {
     data["key"] = app.roomList.length;

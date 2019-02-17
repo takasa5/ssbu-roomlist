@@ -21,7 +21,6 @@ def return_list():
 def add_room(data):
     data["editpass"] = hashlib.sha256(data["editpass"].encode()).hexdigest()
     data["uuid"] = str(uuid.uuid4())
-    print(data)
     ROOM_LIST.append(data)
     emit("created", data, broadcast=True)
 
@@ -30,7 +29,6 @@ def update_room(password, uid, key, data):
     global ROOM_LIST
     room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
     password = hashlib.sha256(password.encode()).hexdigest()
-    print(room["editpass"], "\n", password)
     if room["editpass"] != password:
         return
     room[key] = data
