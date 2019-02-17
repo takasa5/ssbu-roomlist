@@ -1,13 +1,12 @@
 import os
 import uuid
-from Crypto.Hash import SHA256
+import hashlib
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
 socketio = SocketIO(app)
-h = SHA256.new()
 ROOM_LIST = []
 
 @app.route('/')
@@ -20,7 +19,7 @@ def return_list():
 
 @socketio.on("create")
 def add_room(data):
-    data["editpass"] = h.update(data["editpass"])
+    data["editpass"] = hashlib.sha256(data["editpass"].encode()).hexdigest()
     data["uuid"] = str(uuid.uuid4())
     print(data)
     ROOM_LIST.append(data)
@@ -30,7 +29,7 @@ def add_room(data):
 def update_room(password, uid, key, data):
     global ROOM_LIST
     room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
-    password = h.update(password)
+    password = hashlib.sha256(password.encode()).hexdigest()
     print(room["editpass"], "\n", password)
     if room["editpass"] != password:
         return
@@ -41,7 +40,7 @@ def update_room(password, uid, key, data):
 def delete_room(password, uid):
     global ROOM_LIST
     room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
-    password = h.update(password)
+    password = hashlib.sha256(password.encode()).hexdigest()
     if room["editpass"] != password:
         return
     rooms = [r for r in ROOM_LIST if r["uuid"] != uid]
