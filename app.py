@@ -1,5 +1,5 @@
 import os
-# import crypt
+import crypt
 import uuid
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
@@ -19,7 +19,7 @@ def return_list():
 
 @socketio.on("create")
 def add_room(data):
-    # data["editpass"] = crypt.crypt(data["editpass"])
+    data["editpass"] = crypt.crypt(data["editpass"])
     data["uuid"] = str(uuid.uuid4())
     print(data)
     ROOM_LIST.append(data)
@@ -29,7 +29,7 @@ def add_room(data):
 def update_room(password, uid, key, data):
     global ROOM_LIST
     room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
-    # password = crypt.crypt(password)
+    password = crypt.crypt(password)
     if room["editpass"] != password:
         return
     room[key] = data
@@ -39,7 +39,7 @@ def update_room(password, uid, key, data):
 def delete_room(password, uid):
     global ROOM_LIST
     room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
-    # password = crypt.crypt(password)
+    password = crypt.crypt(password)
     if room["editpass"] != password:
         return
     rooms = [r for r in ROOM_LIST if r["uuid"] != uid]
