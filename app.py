@@ -34,7 +34,7 @@ def update_room(password, uid, key, data):
     if room["editpass"] != password:
         return
     room[key] = data
-    emit("updated", ROOM_LIST)
+    emit("updated", ROOM_LIST, broadcast=True)
 
 @socketio.on("delete")
 def delete_room(password, uid):
@@ -46,7 +46,7 @@ def delete_room(password, uid):
     rooms = [r for r in ROOM_LIST if r["uuid"] != uid]
     del ROOM_LIST
     ROOM_LIST = rooms
-    emit("updated", ROOM_LIST)
+    emit("updated", ROOM_LIST, broadcast=True)
 
 if __name__ == '__main__':
     socketio.run(app, debug=True)
