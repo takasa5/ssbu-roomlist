@@ -13,6 +13,10 @@ ROOM_LIST = []
 def index():
     return render_template('index.html')
 
+@app.route('/history')
+def history():
+    return render_template('history.html')
+
 @socketio.on("open")
 def return_list():
     emit("return_list", ROOM_LIST)
