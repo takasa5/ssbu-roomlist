@@ -14,7 +14,7 @@ if (document.cookie != '') {
     }
 }
 var roomListTemp = `
-<div class="room-list">
+<div class="room-list" v-bind:class="{ full : room.member == room.capacity }">
     <div class="icon">
         <img :src="room.icon">
     </div>
