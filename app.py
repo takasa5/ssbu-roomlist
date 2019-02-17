@@ -17,24 +17,31 @@ def index():
 def return_list():
     emit("return_list", ROOM_LIST)
 
-@socketio.on("add")
+@socketio.on("create")
 def add_room(data):
     # data["editpass"] = crypt.crypt(data["editpass"])
     data["uuid"] = str(uuid.uuid4())
     print(data)
     ROOM_LIST.append(data)
-    emit("recv_add", data, broadcast=True)
+    emit("created", data, broadcast=True)
 
 @socketio.on("update")
-def update_room(uid, key, data):
+def update_room(password, uid, key, data):
     global ROOM_LIST
     room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
+    # password = crypt.crypt(password)
+    if room["editpass"] != password:
+        return
     room[key] = data
     emit("updated", ROOM_LIST)
 
 @socketio.on("delete")
-def delete_room(uid):
+def delete_room(password, uid):
     global ROOM_LIST
+    room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
+    # password = crypt.crypt(password)
+    if room["editpass"] != password:
+        return
     rooms = [r for r in ROOM_LIST if r["uuid"] != uid]
     del ROOM_LIST
     ROOM_LIST = rooms

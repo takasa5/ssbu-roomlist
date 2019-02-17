@@ -18,7 +18,9 @@ var c = Vue.component('room-list', {
     props: ['room'],
     template: `
         <div class="room-list">
-            <img class="icon" :src="room.icon">
+            <div class="icon">
+                <img :src="room.icon">
+            </div>
             <div class="power">{{ room.power }}<span v-if="room.power != ''">万</span></div>
             <div class="id">{{ room.id }}</div>
             <div class="pass">{{ room.pass }}</div>
@@ -59,23 +61,23 @@ var c = Vue.component('room-list', {
                 return "pc";
         },
         addMember: function () {
-            if (sample.editpass == room.editpass) {
-                if (room.member >= room.capacity)
-                    return;
-                else
-                    socket.emit("update", room.uuid, "member", room.member + 1);
-            }
+            if (this.room.member >= this.room.capacity)
+                return;
+            else
+                socket.emit("update", sample.editpass, this.room.uuid, "member", this.room.member + 1);
         },
         subMember: function () {
-            if (sample.editpass == room.editpass) {
-                if (room.member == 1)
-                    socket.emit("delete", room.uuid);
-                else
-                    socket.emit("update", room.uuid, "member", room.member - 1);
-            }
+            if (this.room.member == 1)
+                socket.emit("delete", sample.editpass, this.room.uuid);
+            else
+                socket.emit("update", sample.editpass, this.room.uuid, "member", this.room.member - 1);
         }
     }
 })
+var images = [];
+for (var i = 1; i < 94; i++) {
+    images.push("/static/img/" + i + ".jpg");
+}
 var sample = new Vue({
     el: "#display",
     data: {
@@ -92,11 +94,13 @@ var sample = new Vue({
         change: "",
         member: "",
         capacity: "",
-        editpass: ""
+        editpass: "",
+        images: images,
+        uuid: ""
     },
     methods: {
         submit: function (event) {
-            socket.emit("add", {
+            socket.emit("create", {
                 icon: this.icon,
                 power: this.power,
                 id: this.id,
@@ -235,7 +239,7 @@ var sample = new Vue({
                 <b>アイコン</b>
             </td>
             <td>
-
+                <img @click="icon = $event.target.src" class="iconlist" v-for="img in images" :src="img" width="30px">
             </td>
         </tr>
         <tr>
@@ -252,7 +256,9 @@ var sample = new Vue({
 
     <p style="text-align:center; margin-bottom: 0">投稿サンプル</p><br>
     <div class="room-list">
-        <img class="icon" :src="icon">
+        <div class="icon">
+            <img :src="icon">
+        </div>
         <div class="power">{{ power }}</div>
         <div class="id">{{ id }}</div>
         <div class="pass">{{ pass }}</div>
@@ -298,7 +304,7 @@ var app = new Vue({
     }
 })  
 
-socket.on("recv_add", function (data) {
+socket.on("created", function (data) {
     data["key"] = app.roomList.length;
     app.roomList.unshift(data);
 });
