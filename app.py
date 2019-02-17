@@ -1,0 +1,44 @@
+import os
+# import crypt
+import uuid
+from flask import Flask, render_template
+from flask_socketio import SocketIO, emit
+
+app = Flask(__name__)
+app.secret_key = os.urandom(24)
+socketio = SocketIO(app)
+ROOM_LIST = []
+
+@app.route('/')
+def index():
+    return render_template('index.html')
+
+@socketio.on("open")
+def return_list():
+    emit("return_list", ROOM_LIST)
+
+@socketio.on("add")
+def add_room(data):
+    # data["editpass"] = crypt.crypt(data["editpass"])
+    data["uuid"] = str(uuid.uuid4())
+    print(data)
+    ROOM_LIST.append(data)
+    emit("recv_add", data, broadcast=True)
+
+@socketio.on("update")
+def update_room(uid, key, data):
+    global ROOM_LIST
+    room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
+    room[key] = data
+    emit("updated", ROOM_LIST)
+
+@socketio.on("delete")
+def delete_room(uid):
+    global ROOM_LIST
+    rooms = [r for r in ROOM_LIST if r["uuid"] != uid]
+    del ROOM_LIST
+    ROOM_LIST = rooms
+    emit("updated", ROOM_LIST)
+
+if __name__ == '__main__':
+    socketio.run(app, debug=True)
