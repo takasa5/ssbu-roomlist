@@ -37,7 +37,7 @@ var roomListTemp = `
     </div>
     <div class="time">{{ room.time }}分</div>
     <div class="ic">{{ room.ic }}</div>
-    <div class="overview">{{ room.overview }}</div>
+    <div class="overview" v-html="room.overview"></div>
     <div class="stage">
         <span v-if="checkDevice() == 'pc'">{{ room.stage }}</span>
         <span v-else>
@@ -120,6 +120,7 @@ var sample = new Vue({
             return checkDevice();
         },
         submit: function (event) {
+            var reg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))");
             socket.emit("create", {
                 icon: this.icon,
                 power: this.power,
@@ -131,7 +132,11 @@ var sample = new Vue({
                 time: this.time,
                 ic: this.ic,
                 stage: this.stage,
-                overview: this.overview,
+                overview: this.overview
+                    .replace(/&/g, '&amp;')
+                    .replace(/</g, '&lt;')
+                    .replace(/>/g, '&gt;')
+                    .replace(reg, "<a href='$1' target='_blank'>$1</a>"),
                 change: this.change,
                 member: 1,
                 capacity: this.capacity,
@@ -286,7 +291,9 @@ var sample = new Vue({
 
     <p style="text-align:center; margin-bottom: 0">投稿サンプル</p><br>
     `
-        + roomListTemp.replace(/room\./g, "").replace('<button @click=\"addMember\">+</button><button @click=\"subMember\">-</button>', "")
+        + roomListTemp.replace(/room\./g, "")
+            .replace('<div class=\"overview\" v-html=\"overview\"></div>', '<div class=\"overview\">{{ overview }}</div>')
+            .replace('<button @click=\"addMember\">+</button><button @click=\"subMember\">-</button>', "")
         + `
     <div style="text-align:center">
         <input v-show="id == '' || style == '' || rule == '' || time == '' || ic == '' || stage == '' || capacity == '' || change == '' || editpass == ''"
