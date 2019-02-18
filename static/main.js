@@ -35,7 +35,7 @@ var roomListTemp = `
         <span v-show="checkDevice() == 'pc'">{{ room.rule }}</span>
         <span v-if="room.rule == 'ストック制'">({{ room.stock }})</span>
     </div>
-    <div class="time">{{ room.time }}分</div>
+    <div class="time">{{ room.time }}</div>
     <div class="ic">{{ room.ic }}</div>
     <div class="overview" v-html="room.overview"></div>
     <div class="stage">
@@ -91,7 +91,7 @@ var c = Vue.component('room-list', {
 })
 var images = [];
 for (var i = 0; i < 104; i++) {
-    images.push("/static/img/" + i + ".jpg");
+    images.push("/static/img/" + i + ".jpg?0219");
 }
 var sample = new Vue({
     el: "#display",
@@ -120,7 +120,7 @@ var sample = new Vue({
             return checkDevice();
         },
         submit: function (event) {
-            var reg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))");
+            var reg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))/g");
             socket.emit("create", {
                 icon: this.icon,
                 power: this.power,
@@ -207,7 +207,21 @@ var sample = new Vue({
                 <b>*制限時間</b>
             </td>
             <td>
-                <input v-model="time" type="number" name="time" max="10" min="1" required>
+                <select v-model="time" name="time" required>
+                    <option disabled value="">制限時間を選択</option>
+                    <option value="1分">1分</option>
+                    <option value="1.5分">1.5分</option>
+                    <option value="2分">2分</option>
+                    <option value="2.5分">2.5分</option>
+                    <option value="3分">3分</option>
+                    <option value="4分">4分</option>
+                    <option value="5分">5分</option>
+                    <option value="6分">6分</option>
+                    <option value="7分">7分</option>
+                    <option value="8分">8分</option>
+                    <option value="9分">9分</option>
+                    <option value="10分">10分</option>
+                </select>
             </td>
         </tr>
         <tr>
