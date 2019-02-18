@@ -31,6 +31,7 @@ var roomListTemp = `
     <div class="rule">
         <i v-if="room.rule == 'ストック制'" class="fas fa-user"></i>
         <i v-if="room.rule == 'タイム制'" class="far fa-clock"></i>
+        <i v-if="room.rule == '体力制'" class="fas fa-heart"></i>
         <span v-show="checkDevice() == 'pc'">{{ room.rule }}</span>
         <span v-if="room.rule == 'ストック制'">({{ room.stock }})</span>
     </div>
@@ -62,6 +63,10 @@ function checkDevice() {
     else
         return "pc";
 }
+
+function sliceMaxLength(elem, maxLength) {  
+    elem.value = elem.value.slice(0, maxLength);  
+}  
 
 var c = Vue.component('room-list', {
     props: ['room'],
@@ -145,7 +150,7 @@ var sample = new Vue({
                 <b>*部屋ID</b>
             </td>
             <td>
-                <input v-model="id" type="text" name="id" size="5" maxlength="5" required>
+                <input v-model="id" type="text" name="id" size="5" maxlength="5" pattern="[A-Za-z0-9]{5}" required> 英数字5文字
             </td>
         </tr>
         <tr>
@@ -153,7 +158,7 @@ var sample = new Vue({
                 <b>パス</b>
             </td>
             <td>
-                <input id="pass" v-model="pass" type="number" name="pass" maxlength="99999999">
+                <input id="pass" v-model="pass" type="number" name="pass" size="8" oninput="sliceMaxLength(this, 8)">
             </td>
         </tr>
         <tr>
@@ -161,7 +166,7 @@ var sample = new Vue({
                 <b>参考戦闘力(万)</b>
             </td>
             <td>
-                <input v-model="power" type="number" name="power" size="3" min="1">
+                <input v-model="power" type="number" name="power" size="3" min="1" max="999">
             </td>
         </tr>
         <tr>
@@ -181,6 +186,7 @@ var sample = new Vue({
             <td>
                 <input v-model="rule" type="radio" name="rule" value="ストック制" required>ストック制
                 <input v-model="rule" type="radio" name="rule" value="タイム制">タイム制
+                <input v-model="rule" type="radio" name="rule" value="体力制">体力制
             </td>
         </tr>
         <tr v-if="rule == 'ストック制'">
@@ -188,7 +194,7 @@ var sample = new Vue({
                 <b>*ストック</b>
             </td>
             <td>
-                <input v-model="stock" type="number" name="stock" min="1" max="5" required>
+                <input v-model="stock" type="number" name="stock" min="1" max="7" required>
             </td>
         </tr>
         <tr>
@@ -279,24 +285,9 @@ var sample = new Vue({
     </table>
 
     <p style="text-align:center; margin-bottom: 0">投稿サンプル</p><br>
-    ` + roomListTemp.replace(/room\./g, "").replace('<button @click=\"addMember\">+</button><button @click=\"subMember\">-</button>', "")
-    // <div class="room-list">
-    //     <div class="icon">
-    //         <img :src="icon">
-    //     </div>
-    //     <div class="power">{{ power }}</div>
-    //     <div class="id">{{ id }}</div>
-    //     <div class="pass">{{ pass }}</div>
-    //     <div class="style">{{ style }}</div>
-    //     <div class="rule">{{ rule }}</div>
-    //     <div class="time">{{ time }}</div>
-    //     <div class="ic">{{ ic }}</div>
-    //     <div class="overview">{{ overview }}</div>
-    //     <div class="stage">{{ stage }}</div>
-    //     <div class="space">1/{{ capacity }}</div>
-    //     <div class="change">{{ change }}</div>
-    // </div>
-    + `
+    `
+        + roomListTemp.replace(/room\./g, "").replace('<button @click=\"addMember\">+</button><button @click=\"subMember\">-</button>', "")
+        + `
     <div style="text-align:center">
         <input v-show="id == '' || style == '' || rule == '' || time == '' || ic == '' || stage == '' || capacity == '' || change == '' || editpass == ''"
             type="submit" value="部屋をリストに追加">
@@ -309,24 +300,7 @@ var sample = new Vue({
 var app = new Vue({
     el: "#app",
     data: {
-        roomList: [
-            // {
-            //     key: 0,
-            //     icon: "/static/sample.jpg",
-            //     power: 300,
-            //     id: "AAAAA",
-            //     pass: "0000",
-            //     style: "1on1",
-            //     rule: "s",
-            //     time: "5",
-            //     ic: "0",
-            //     stage: "終点",
-            //     overview: "3連戦で抜けてください",
-            //     change: "l1",
-            //     member: 1,
-            //     capacity: 4
-            // }
-        ]
+        roomList: []
     }
 })
 

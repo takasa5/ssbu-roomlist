@@ -42,6 +42,7 @@ footer {
 .icon {
     grid-row: 1 / 3;
     grid-column: 1;
+    border-top-left-radius: 10px;
 }
 .icon > img {
     margin-left: auto;
@@ -52,6 +53,7 @@ footer {
 .power {
     grid-row: 3;
     grid-column: 1;
+    border-bottom-left-radius: 10px;
 }
 
 .id {
@@ -98,11 +100,13 @@ footer {
 .space {
     grid-row: 1 / 3;
     grid-column: 7;
+    border-top-right-radius: 10px;
 }
 
 .change {
     grid-row: 3;
     grid-column: 7;
+    border-bottom-right-radius: 10px;
 }
 
 .ftdc {
@@ -114,7 +118,15 @@ footer {
 td {
     max-width: 800px;
 }
+
 .iconlist {
     width: 30px;
     cursor: pointer;
+}
+
+@media screen and (orientation: portrait) {
+    button {
+        padding-left: 4px;
+        padding-right: 4px;
+    }
 }
