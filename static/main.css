@@ -48,6 +48,7 @@ footer {
     margin-left: auto;
     margin-right: auto;
     object-fit: contain;
+    max-width: 50px;
 }
 
 .power {
