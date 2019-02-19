@@ -120,7 +120,7 @@ var sample = new Vue({
             return checkDevice();
         },
         submit: function (event) {
-            var reg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))/g");
+            var reg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))");
             socket.emit("create", {
                 icon: this.icon,
                 power: this.power,
