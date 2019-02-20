@@ -53,6 +53,9 @@ var roomListTemp = `
             </span>
         </span>
     </div>
+    <div class="start">{{ room.start }}</div>
+    <div class="b">～</div>
+    <div class="deadline">{{ room.deadline }}</div>
 </div>
 `;
 
@@ -113,6 +116,8 @@ var sample = new Vue({
         editpass: "",
         images: images,
         change: "",
+        start: "",
+        deadline: "",
         uuid: ""
     },
     methods: {
@@ -140,6 +145,7 @@ var sample = new Vue({
                 change: this.change,
                 member: 1,
                 capacity: this.capacity,
+                deadline: this.deadline,
                 editpass: this.editpass
             });
             document.cookie = 'editpass=' + encodeURIComponent(this.editpass);
@@ -273,6 +279,14 @@ var sample = new Vue({
             </td>
             <td>
                 <input v-model="capacity" type="number" name="capacity" max="8" min="2" required>
+            </td>
+        </tr>
+        <tr>
+            <td class="ftdc">
+                <b>終了予定時刻</b>
+            </td>
+            <td>
+                <input v-model="deadline" type="time" name="deadline">
             </td>
         </tr>
         <tr>
