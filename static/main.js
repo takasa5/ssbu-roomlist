@@ -113,12 +113,12 @@ var sample = new Vue({
         change: "",
         member: "",
         capacity: "",
-        editpass: "",
+        editpass: arr['editpass'] == undefined ? "": arr['editpass'],
         images: images,
         change: "",
         start: "",
         deadline: "",
-        uuid: ""
+        uuid: "",
     },
     methods: {
         checkDevice: function () {
@@ -310,7 +310,7 @@ var sample = new Vue({
                 <b>*編集用パス</b>
             </td>
             <td>
-                <input id="inp_editpass" v-model="editpass" type="password" size="8" required>
+                <input id="inp_editpass" v-model="editpass" type="password" v-bind:value.prop="editpass" size="8" required>
                 英数8文字以内
             </td>
         </tr>
