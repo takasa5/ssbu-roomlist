@@ -149,3 +149,7 @@ td {
     grid-row: 4;
     grid-column: 5 / 8;
 }
+
+.fa-edit .fa-undo {
+    cursor: pointer;
+}

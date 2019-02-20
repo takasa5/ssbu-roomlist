@@ -19,7 +19,12 @@ var roomListTemp = `
         <img :src="room.icon">
     </div>
     <div class="power">{{ room.power }}<span v-if="room.power != ''">万</span></div>
-    <div class="id">{{ room.id }}</div>
+    <div class="id">
+        <span v-show="!room.id_edit">{{ room.id }}</span>
+        <input autofocus v-model="room.new_id" v-show="room.id_edit" type="text" name="id_edit" size="5" maxlength="5" pattern="[A-Za-z0-9]{5}">
+        <i v-show="!room.id_edit" @click="room.id_edit = true;" class="fas fa-edit"></i>
+        <i v-show="room.id_edit" @click="changeID" class="fas fa-undo"></i>
+    </div>
     <div class="pass">{{ room.pass }}</div>
     <div class="style">
         <span v-if="checkDevice() == 'pc'">{{ room.style }}</span>
@@ -89,6 +94,11 @@ var c = Vue.component('room-list', {
                 socket.emit("delete", sample.editpass, this.room.uuid);
             else
                 socket.emit("update", sample.editpass, this.room.uuid, "member", this.room.member - 1);
+        },
+        changeID: function () {
+            if (this.room.new_id != "" && this.room.new_id.length == 5)
+                socket.emit("update", sample.editpass, this.room.uuid, "id", this.room.new_id);
+            this.room.id_edit = false;
         }
     }
 })
@@ -119,6 +129,8 @@ var sample = new Vue({
         start: "",
         deadline: "",
         uuid: "",
+        id_edit: false,
+        new_id: ""
     },
     methods: {
         checkDevice: function () {
@@ -146,7 +158,9 @@ var sample = new Vue({
                 member: 1,
                 capacity: this.capacity,
                 deadline: this.deadline,
-                editpass: this.editpass
+                editpass: this.editpass,
+                id_edit: false,
+                new_id: ""
             });
             document.cookie = 'editpass=' + encodeURIComponent(this.editpass);
             location.reload();
@@ -322,6 +336,8 @@ var sample = new Vue({
         + roomListTemp.replace(/room\./g, "")
             .replace('<div class=\"overview\" v-html=\"overview\"></div>', '<div class=\"overview\">{{ overview }}</div>')
             .replace('<button @click=\"addMember\">+</button><button @click=\"subMember\">-</button>', "")
+            .replace('<i v-show=\"!id_edit\" @click=\"id_edit = true;\" class=\"fas fa-edit\"></i>', "")
+            .replace('<i v-show=\"id_edit\" @click=\"changeID\" class=\"fas fa-undo\"></i>', "")
         + `
     <div style="text-align:center">
         <input v-show="id == '' || style == '' || rule == '' || time == '' || ic == '' || stage == '' || capacity == '' || change == '' || editpass == ''"
