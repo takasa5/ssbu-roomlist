@@ -130,11 +130,36 @@ var sample = new Vue({
         deadline: "",
         uuid: "",
         id_edit: false,
-        new_id: ""
+        new_id: "",
+        temp_string: "",
+        success: false,
     },
     methods: {
         checkDevice: function () {
             return checkDevice();
+        },
+        makeTempString: function () {
+            this.temp_string = "";
+            this.temp_string += "【部屋ID】" + this.id + "\n";
+            this.temp_string += "【パス】" + this.pass + "\n";
+            this.temp_string += "【乱闘形式】" + this.style + "\n";
+            this.temp_string += "【ルール】" + this.rule;
+            if (this.rule == "ストック制")
+                this.temp_string += " "  + this.stock + "ストック\n";
+            else
+                this.temp_string += "\n";
+            this.temp_string += "【制限時間】" + this.time + "\n";
+            this.temp_string += "【ステージ】";
+            if (this.stage == "ランダム")
+                this.temp_string += "ギミックなしランダム\n";
+            else if (this.stage == "ギミック")
+                this.temp_string += "ギミックありランダム\n";
+            else
+                this.temp_string += this.stage + "\n";
+            this.temp_string += "【アイテム】" + this.ic[0] + "\n";
+            this.temp_string += "【チャージ切り札】" + this.ic[2] + "\n";
+            this.temp_string += "【入れ換え】" + this.change + "\n";
+            this.temp_string += this.overview;
         },
         submit: function (event) {
             var reg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))");
@@ -340,6 +365,9 @@ var sample = new Vue({
             .replace('<i v-show=\"id_edit\" @click=\"changeID\" class=\"fas fa-undo\"></i>', "")
         + `
     <div style="text-align:center">
+        <button id="copy" @click="makeTempString" :data-clipboard-text="temp_string">テンプレ文字列をコピー</button>
+        <span v-show="success" style="color: red;">コピーしました</span>
+        <br>
         <input v-show="id == '' || style == '' || rule == '' || time == '' || ic == '' || stage == '' || capacity == '' || change == '' || editpass == ''"
             type="submit" value="部屋をリストに追加">
         <input v-show="id != '' && style != '' && rule != '' && time != '' && ic != '' && stage != '' && capacity != '' && change != '' && editpass != ''"
@@ -354,6 +382,12 @@ var app = new Vue({
         roomList: []
     }
 })
+
+var clipboard = new Clipboard('#copy');
+clipboard.on('success', function (e) {
+    sample.success = true;
+    e.clearSelection();
+});
 
 socket.on("created", function (data) {
     data["key"] = app.roomList.length;
