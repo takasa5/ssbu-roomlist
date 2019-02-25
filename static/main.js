@@ -189,10 +189,31 @@ var sample = new Vue({
             });
             document.cookie = 'editpass=' + encodeURIComponent(this.editpass);
             location.reload();
+        },
+        inputOnes: function () {
+            this.style = "1on1";
+            this.rule = "ストック制";
+            this.stock = "2";
+            this.time = "5分";
+            this.stage = "終点化";
+            this.ic = "無/無";
+            this.change = "負け抜け1人";
+        },
+        inputFours: function () {
+            this.style = "乱闘";
+            this.rule = "タイム制";
+            this.time = "3分";
+            this.stage = "ギミック";
+            this.ic = "有/有";
+            this.change = "負け抜け2人";
         }
     },
     template: `
     <form id="inputArea" method="POST" onsubmit="return false;">
+    <div style="text-align:center">
+        <button @click="inputOnes">1on1入力</button>
+        <button @click="inputFours">乱闘入力</button>
+    </div>
     <table class="ftbl" id="ftbl" style="position: static; left: 50%; margin-left: auto; margin-right: auto; top: 16711px; visibility: visible;">
     <tbody>
         <tr>

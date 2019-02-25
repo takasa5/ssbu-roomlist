@@ -13,11 +13,8 @@
 </head>
 <body>
     <h1 style="text-align: center">とし部屋</h1>
-    <div id="display">
-    </div>
-    <hr>
     <div id="app">
-        <h2 style="text-align: center">部屋リスト</h2>
+        <h2 style="text-align: center">部屋一覧</h2>
         <div v-if="roomList.length == 0" style="text-align: center">現在立っている部屋はありません。</div>
         <room-list
             v-for="room in roomList"
@@ -25,7 +22,11 @@
             v-bind:room="room"
         ></room-list>
     </div>
-    <script src="/static/main.js?12"></script>
+    <hr>
+    <h2 style="text-align:center">部屋立て</h2>
+    <div id="display">
+    </div>
+    <script src="/static/main.js?13"></script>
     <hr>
     <footer>
         <h3>使い方</h3>
