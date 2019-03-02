@@ -198,6 +198,7 @@ var sample = new Vue({
             this.stage = "終点化";
             this.ic = "無/無";
             this.change = "負け抜け1人";
+            this.capacity = 4;
         },
         inputFours: function () {
             this.style = "乱闘";
@@ -206,6 +207,7 @@ var sample = new Vue({
             this.stage = "ギミック";
             this.ic = "有/有";
             this.change = "負け抜け2人";
+            this.capacity = 6;
         }
     },
     template: `
