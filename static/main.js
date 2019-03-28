@@ -4,15 +4,8 @@ if (hostname == "localhost" || hostname == "127.0.0.1" || hostname == "") {
 } else {
     socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
 }
+
 socket.emit("open");
-var arr = {};
-if (document.cookie != '') {
-    var tmp = document.cookie.split('; ');
-    for (var i = 0; i < tmp.length; i++) {
-        var data = tmp[i].split('=');
-        arr[data[0]] = decodeURIComponent(data[1]);
-    }
-}
 var roomListTemp = `
 <div class="room-list" v-bind:class="{ full : room.member == room.capacity }">
     <div class="icon">
@@ -90,9 +83,11 @@ var c = Vue.component('room-list', {
                 socket.emit("update", sample.editpass, this.room.uuid, "member", this.room.member + 1);
         },
         subMember: function () {
-            if (this.room.member == 1)
+            if (this.room.member == 1) {
                 socket.emit("delete", sample.editpass, this.room.uuid);
-            else
+                sessionStorage["roomFlag"] = false;
+                sample.roomFlag = false;
+            } else
                 socket.emit("update", sample.editpass, this.room.uuid, "member", this.room.member - 1);
         },
         changeID: function () {
@@ -123,7 +118,7 @@ var sample = new Vue({
         change: "",
         member: "",
         capacity: "",
-        editpass: arr['editpass'] == undefined ? "": arr['editpass'],
+        editpass: "",
         images: images,
         change: "",
         start: "",
@@ -133,6 +128,18 @@ var sample = new Vue({
         new_id: "",
         temp_string: "",
         success: false,
+        roomFlag: false,
+    },
+    mounted() {
+        if (sessionStorage["editpass"]) {
+            this.editpass = sessionStorage["editpass"];
+        }
+        if (sessionStorage["roomFlag"]) {
+            if (sessionStorage["roomFlag"] == "true")
+                this.roomFlag = true;
+            else if (sessionStorage["roomFlag"] == "false")
+                this.roomFlag = false;
+        }
     },
     methods: {
         checkDevice: function () {
@@ -187,8 +194,11 @@ var sample = new Vue({
                 id_edit: false,
                 new_id: ""
             });
-            document.cookie = 'editpass=' + encodeURIComponent(this.editpass);
-            location.reload();
+            // document.cookie = 'editpass=' + encodeURIComponent(this.editpass);
+            sessionStorage["editpass"] = this.editpass;
+            sessionStorage["roomFlag"] = true;
+            this.roomFlag = true;
+            // location.reload();
         },
         inputOnes: function () {
             this.style = "1on1";
@@ -391,9 +401,9 @@ var sample = new Vue({
         <button id="copy" @click="makeTempString" :data-clipboard-text="temp_string">テンプレ文字列をコピー</button>
         <span v-show="success" style="color: red;">コピーしました</span>
         <br>
-        <input v-show="id == '' || style == '' || rule == '' || time == '' || ic == '' || stage == '' || capacity == '' || change == '' || editpass == ''"
+        <input v-show="!roomFlag && (id == '' || style == '' || rule == '' || time == '' || ic == '' || stage == '' || capacity == '' || change == '' || editpass == '')"
             type="submit" value="部屋をリストに追加">
-        <input v-show="id != '' && style != '' && rule != '' && time != '' && ic != '' && stage != '' && capacity != '' && change != '' && editpass != ''"
+        <input v-show="!roomFlag && id != '' && style != '' && rule != '' && time != '' && ic != '' && stage != '' && capacity != '' && change != '' && editpass != ''"
             type="submit" value="部屋をリストに追加" @click="submit">
     </div>
     </form>`
@@ -418,6 +428,10 @@ socket.on("created", function (data) {
 });
 
 socket.on("return_list", function (rooms) {
+    if (rooms.length == 0) {
+        sessionStorage["roomFlag"] = false;
+        sample.roomFlag = false;
+    }
     for (var i = 0; i < rooms.length; i++) {
         room = rooms[i];
         room["key"] = app.roomList.length;
