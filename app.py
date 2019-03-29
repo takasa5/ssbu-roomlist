@@ -1,8 +1,7 @@
 import os
 import uuid
 import json
-import urllib.request
-import urllib.error
+import requests
 import hashlib
 import datetime
 from flask import Flask, render_template, url_for
@@ -90,12 +89,13 @@ def add_room(data):
             }
         ]
     }
-    req = urllib.request.Request(url, data=json.dumps(content).encode("utf-8"), headers=headers)
-    try:
-        with urllib.request.urlopen(req) as res:
-            body = res.read()
-    except urllib.error.HTTPError as e:
-        print(e)
+    res = requests.post(
+        url,
+        json.dumps(content),
+        headers=headers
+    )
+    print(res)
+
     data["editpass"] = hashlib.sha256(data["editpass"].encode()).hexdigest()
     data["uuid"] = str(uuid.uuid4())
     data["start"] = datetime.datetime.now(JST).strftime('%H:%M')
