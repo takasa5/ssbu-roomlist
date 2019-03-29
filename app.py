@@ -120,6 +120,30 @@ def delete_room(password, uid):
     password = hashlib.sha256(password.encode()).hexdigest()
     if room["editpass"] != password:
         return
+
+    url = os.getenv("DISCORD_WEBHOOK")
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    content = {
+        "username": "とし部屋通知",
+        "content": "ID:" + room["id"] + "は解散しました",
+        "embeds": [
+            {
+                "color": int("800000", 16),
+                "thumbnail": {
+                    "url": room["icon"]
+                }
+            }
+        ]
+    }
+    res = requests.post(
+        url,
+        json.dumps(content),
+        headers=headers
+    )
+    print(res)
+
     rooms = [r for r in ROOM_LIST if r["uuid"] != uid]
     del ROOM_LIST
     ROOM_LIST = rooms
