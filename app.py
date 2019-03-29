@@ -28,7 +28,7 @@ def return_list():
 @socketio.on("create")
 def add_room(data):
     # notification to discord
-    url = "https://discordapp.com/api/webhooks/560604859666268176/BQGxyKb7zIoa9bFC3zncEhWfKFTnxNWopnLUdhgBzbbx-pwSm_LFEM3DxynVjHLKWFMq"
+    url = os.getenv("DISCORD_WEBHOOK")
     headers = {
         'Content-Type': 'application/json',
     }
