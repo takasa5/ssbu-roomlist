@@ -81,6 +81,7 @@ def add_room(data):
         "content": "【ID】" + data["id"] + "\r【パス】" + data["pass"],
         "embeds": [
             {
+                "description": data["overview"],
                 "color": int("800000", 16),
                 "thumbnail": {
                     "url": data["icon"]
