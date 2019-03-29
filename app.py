@@ -78,12 +78,14 @@ def add_room(data):
         })
     content = {
         "username": "とし部屋通知",
-        "avatar_url": url_for("static", filename="img/icon.jpg"),
+        # "avatar_url": url_for("static", filename="img/icon.jpg"),
         "content": "【ID】" + data["id"] + "\r【パス】" + data["pass"],
         "embeds": [
             {
                 "color": int("800000", 16),
-                "thumbnail": data["icon"],
+                "thumbnail": {
+                    "url": data["icon"]
+                },
                 "fields": fields
             }
         ]
