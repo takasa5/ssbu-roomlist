@@ -102,8 +102,19 @@ var c = Vue.component('room-list', {
             this.room.id_edit = false;
         },
         changeURL: function () {
-            if (this.room.new_url != "")
-                socket.emit("update", sample.editpass, this.room.uuid, "cast_url", this.room.new_url);
+            var whitelist = [
+                "https://www.youtube.com",
+                "https://www.cavelis.net",
+                "https://www.twitch.tv"
+            ]
+            if (this.room.new_url != "") {
+                for (var url of whitelist) {
+                    if (this.room.new_url.indexOf(url) == 0) {
+                        socket.emit("update", sample.editpass, this.room.uuid, "cast_url", this.room.new_url);
+                        break;
+                    }
+                }
+            }
             this.room.url_edit = false;
         }
     }
@@ -185,6 +196,18 @@ var sample = new Vue({
         },
         submit: function (event) {
             var reg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))");
+            var whitelist = [
+                "https://www.youtube.com",
+                "https://www.cavelis.net",
+                "https://www.twitch.tv"
+            ];
+            var whiteflag = false;
+            for (var url of whitelist) {
+                if (this.cast_url.indexOf(url) == 0)
+                    whiteflag = true;
+            }
+            if (!whiteflag)
+                this.cast_url = "";
             socket.emit("create", {
                 icon: this.icon,
                 power: this.power,
