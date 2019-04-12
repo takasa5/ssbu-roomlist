@@ -36,7 +36,8 @@ var roomListTemp = `
     <div class="time">{{ room.time }}</div>
     <div class="ic">{{ room.ic }}</div>
     <div class="overview">
-    <i v-show="!room.url_edit" @click="room.url_edit = true;" v-if="room.cast == true" class="fas fa-video fa-fw"></i>
+    <i v-show="!room.url_edit" @click="room.url_edit = true;" v-if="room.cast == 'true'" class="fas fa-video fa-fw"></i>
+    <i v-show="room.cast_url == ''" v-if="room.cast == 'false'" class="fas fa-video-slash fa-fw"></i>
     <input autofocus v-show="room.url_edit" v-model="room.new_url" type="url">
     <i v-show="room.url_edit" @click="changeURL" class="fas fa-undo"></i>
     <a v-if="room.cast_url != ''" v-bind:href = "room.cast_url" target="_blank" rel="noopener noreferrer"><i class="fas fa-video fa-fw" style="text-decoration: underline"></i></a>
@@ -425,7 +426,8 @@ var sample = new Vue({
                 <b>配信</b>
             </td>
             <td>
-                <input v-model="cast" type="checkbox" name="cast">可
+                <input v-model="cast" type="radio" name="cast" value="true">OK
+                <input v-model="cast" type="radio" name="cast" value="false">NG
             </td>
         </tr>
         <tr>
@@ -455,7 +457,7 @@ var sample = new Vue({
             .replace('<button @click=\"addMember\">+</button><button @click=\"subMember\">-</button>', "")
             .replace('<i v-show=\"!id_edit\" @click=\"id_edit = true;\" class=\"fas fa-edit\"></i>', "")
             .replace('<i v-show=\"id_edit\" @click=\"changeID\" class=\"fas fa-undo\"></i>', "")
-            .replace('<i v-show=\"!url_edit\" @click=\"url_edit = true;\" v-if=\"cast == true\" class=\"fas fa-video fa-fw\"></i>', '<i v-show=\"!url_edit\" v-if=\"cast == true\" class=\"fas fa-video fa-fw\"></i>')
+            .replace('<i v-show=\"!url_edit\" @click=\"url_edit = true;\" v-if=\"cast == \'true\'\" class=\"fas fa-video fa-fw\"></i>', '<i v-show=\"!url_edit\" v-if=\"cast == \'true\'\" class=\"fas fa-video fa-fw\"></i>')
         + `
     <div style="text-align:center">
         <button id="copy" @click="makeTempString" :data-clipboard-text="temp_string">テンプレ文字列をコピー</button>
