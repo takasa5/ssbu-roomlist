@@ -153,3 +153,12 @@ td {
 .fa-edit .fa-undo {
     cursor: pointer;
 }
+
+.fa-video {
+    position: absolute;
+    cursor: pointer;
+}
+
+.overview > .content {
+    text-indent: 1.5em;
+}

@@ -35,7 +35,13 @@ var roomListTemp = `
     </div>
     <div class="time">{{ room.time }}</div>
     <div class="ic">{{ room.ic }}</div>
-    <div class="overview" v-html="room.overview"></div>
+    <div class="overview">
+    <i v-show="!room.url_edit" @click="room.url_edit = true;" v-if="room.cast == true" class="fas fa-video fa-fw"></i>
+    <input autofocus v-show="room.url_edit" v-model="room.new_url" type="url">
+    <i v-show="room.url_edit" @click="changeURL" class="fas fa-undo"></i>
+    <a v-if="room.cast_url != ''" v-bind:href = "room.cast_url" target="_blank" rel="noopener noreferrer"><i class="fas fa-video fa-fw" style="text-decoration: underline"></i></a>
+    <div v-html="room.overview" class="content"></div>
+    </div>
     <div class="stage">
         <span v-if="checkDevice() == 'pc'">{{ room.stage }}</span>
         <span v-else>
@@ -94,6 +100,11 @@ var c = Vue.component('room-list', {
             if (this.room.new_id != "" && this.room.new_id.length == 5)
                 socket.emit("update", sample.editpass, this.room.uuid, "id", this.room.new_id);
             this.room.id_edit = false;
+        },
+        changeURL: function () {
+            if (this.room.new_url != "")
+                socket.emit("update", sample.editpass, this.room.uuid, "cast_url", this.room.new_url);
+            this.room.url_edit = false;
         }
     }
 })
@@ -129,6 +140,10 @@ var sample = new Vue({
         temp_string: "",
         success: false,
         roomFlag: false,
+        cast: false,
+        cast_url: "",
+        url_edit: false,
+        new_url: false
     },
     mounted() {
         if (sessionStorage["editpass"]) {
@@ -192,7 +207,11 @@ var sample = new Vue({
                 deadline: this.deadline,
                 editpass: this.editpass,
                 id_edit: false,
-                new_id: ""
+                new_id: "",
+                cast: this.cast,
+                cast_url: this.cast_url,
+                url_edit: this.url_edit,
+                new_url: "",
             });
             // document.cookie = 'editpass=' + encodeURIComponent(this.editpass);
             sessionStorage["editpass"] = this.editpass;
@@ -218,7 +237,8 @@ var sample = new Vue({
             this.ic = "有/有";
             this.change = "負け抜け2人";
             this.capacity = 6;
-        }
+        },
+        changeURL: function() {},
     },
     template: `
     <form id="inputArea" method="POST" onsubmit="return false;">
@@ -379,6 +399,22 @@ var sample = new Vue({
         </tr>
         <tr>
             <td class="ftdc">
+                <b>配信</b>
+            </td>
+            <td>
+                <input v-model="cast" type="checkbox" name="cast">可
+            </td>
+        </tr>
+        <tr>
+            <td class="ftdc">
+                <b>配信URL</b>
+            </td>
+            <td>
+                <input v-model="cast_url" type="url">
+            </td>
+        </td>
+        <tr>
+            <td class="ftdc">
                 <b>*編集用パス</b>
             </td>
             <td>
@@ -392,10 +428,11 @@ var sample = new Vue({
     <p style="text-align:center; margin-bottom: 0">投稿サンプル</p><br>
     `
         + roomListTemp.replace(/room\./g, "")
-            .replace('<div class=\"overview\" v-html=\"overview\"></div>', '<div class=\"overview\">{{ overview }}</div>')
+            .replace('<div v-html=\"overview\" class=\"content\"></div>', '<div class=\"content\">{{ overview }}</div>')
             .replace('<button @click=\"addMember\">+</button><button @click=\"subMember\">-</button>', "")
             .replace('<i v-show=\"!id_edit\" @click=\"id_edit = true;\" class=\"fas fa-edit\"></i>', "")
             .replace('<i v-show=\"id_edit\" @click=\"changeID\" class=\"fas fa-undo\"></i>', "")
+            .replace('<i v-show=\"!url_edit\" @click=\"url_edit = true;\" v-if=\"cast == true\" class=\"fas fa-video fa-fw\"></i>', '<i v-show=\"!url_edit\" v-if=\"cast == true\" class=\"fas fa-video fa-fw\"></i>')
         + `
     <div style="text-align:center">
         <button id="copy" @click="makeTempString" :data-clipboard-text="temp_string">テンプレ文字列をコピー</button>
