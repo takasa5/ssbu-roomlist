@@ -37,6 +37,8 @@ def add_room(data):
     for key in data:
         if type(data[key]) == str:
             sanitized_data[key] = escape(data[key])
+        else:
+            sanitized_data[key] = data[key]
 
     url = os.getenv("DISCORD_WEBHOOK")
     headers = {
@@ -122,7 +124,11 @@ def update_room(password, uid, key, data):
     password = hashlib.sha256(password.encode()).hexdigest()
     if room["editpass"] != password:
         return
-    room[key] = escape(data)
+    sanitized_data = {}
+    if type(data) is str:
+        room[key] = escape(data)
+    else:
+        room[key] = data
     emit("updated", ROOM_LIST, broadcast=True)
 
 
