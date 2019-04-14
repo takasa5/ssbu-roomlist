@@ -1,11 +1,3 @@
-var hostname = document.location.hostname;
-if (hostname == "localhost" || hostname == "127.0.0.1" || hostname == "") {
-    socket = io('http://127.0.0.1:5000');
-} else {
-    socket = io.connect(location.protocol + '//' + document.domain + ':' + location.port);
-}
-
-socket.emit("open");
 var roomListTemp = `
 <div class="room-list" v-bind:class="{ full : room.member == room.capacity }">
     <div class="icon">
@@ -64,18 +56,6 @@ var roomListTemp = `
 </div>
 `;
 
-function checkDevice() {
-    var ua = window.navigator.userAgent.toLowerCase();
-    if (ua.indexOf("phone") != -1 || ua.indexOf("android") != -1 || ua.indexOf("ipod") != -1 || ua.indexOf("ipad") != -1 || ua.indexOf("tab") != -1)
-        return "phone";
-    else
-        return "pc";
-}
-
-function sliceMaxLength(elem, maxLength) {  
-    elem.value = elem.value.slice(0, maxLength);  
-}  
-
 var c = Vue.component('room-list', {
     props: ['room'],
     template: roomListTemp,
@@ -103,27 +83,17 @@ var c = Vue.component('room-list', {
             this.room.id_edit = false;
         },
         changeURL: function () {
-            var whitelist = [
-                "https://www.youtube.com",
-                "https://www.cavelis.net",
-                "https://www.twitch.tv"
-            ]
-            if (this.room.new_url != "") {
-                for (var url of whitelist) {
-                    if (this.room.new_url.indexOf(url) == 0) {
-                        socket.emit("update", sample.editpass, this.room.uuid, "cast_url", this.room.new_url);
-                        break;
-                    }
-                }
-            }
+            socket.emit("update_cast", this.room.uuid, "cast_url", this.room.new_url);
             this.room.url_edit = false;
         }
     }
 })
+
 var images = [];
 for (var i = 0; i < 104; i++) {
     images.push("/static/img/" + i + ".jpg?0219");
 }
+
 var sample = new Vue({
     el: "#display",
     data: {
@@ -152,7 +122,7 @@ var sample = new Vue({
         temp_string: "",
         success: false,
         roomFlag: false,
-        cast: false,
+        cast: null,
         cast_url: "",
         url_edit: false,
         new_url: false
@@ -179,7 +149,7 @@ var sample = new Vue({
             this.temp_string += "【乱闘形式】" + this.style + "\n";
             this.temp_string += "【ルール】" + this.rule;
             if (this.rule == "ストック制")
-                this.temp_string += " "  + this.stock + "ストック\n";
+                this.temp_string += " " + this.stock + "ストック\n";
             else
                 this.temp_string += "\n";
             this.temp_string += "【制限時間】" + this.time + "\n";
@@ -196,19 +166,6 @@ var sample = new Vue({
             this.temp_string += this.overview;
         },
         submit: function (event) {
-            var reg = new RegExp("((https?|ftp)(:\/\/[-_.!~*\'()a-zA-Z0-9;\/?:\@&=+\$,%#]+))");
-            var whitelist = [
-                "https://www.youtube.com",
-                "https://www.cavelis.net",
-                "https://www.twitch.tv"
-            ];
-            var whiteflag = false;
-            for (var url of whitelist) {
-                if (this.cast_url.indexOf(url) == 0)
-                    whiteflag = true;
-            }
-            if (!whiteflag)
-                this.cast_url = "";
             socket.emit("create", {
                 icon: this.icon,
                 power: this.power,
@@ -220,11 +177,7 @@ var sample = new Vue({
                 time: this.time,
                 ic: this.ic,
                 stage: this.stage,
-                overview: this.overview
-                    .replace(/&/g, '&amp;')
-                    .replace(/</g, '&lt;')
-                    .replace(/>/g, '&gt;')
-                    .replace(reg, "<a href='$1' target='_blank'>$1</a>"),
+                overview: this.overview,
                 change: this.change,
                 member: 1,
                 capacity: this.capacity,
@@ -237,11 +190,9 @@ var sample = new Vue({
                 url_edit: this.url_edit,
                 new_url: "",
             });
-            // document.cookie = 'editpass=' + encodeURIComponent(this.editpass);
             sessionStorage["editpass"] = this.editpass;
             sessionStorage["roomFlag"] = true;
             this.roomFlag = true;
-            // location.reload();
         },
         inputOnes: function () {
             this.style = "1on1";
@@ -262,7 +213,7 @@ var sample = new Vue({
             this.change = "負け抜け2人";
             this.capacity = 6;
         },
-        changeURL: function() {},
+        changeURL: function () { },
     },
     template: `
     <form id="inputArea" method="POST" onsubmit="return false;">
@@ -301,9 +252,9 @@ var sample = new Vue({
                 <b>*乱闘形式</b>
             </td>
             <td>
-                <input v-model="style" name="style" type="radio" value="1on1" required>1on1
-                <input v-model="style" name="style" type="radio" value="乱闘">乱闘
-                <input v-model="style" name="style" type="radio" value="チーム乱闘">チーム乱闘
+                <label><input v-model="style" name="style" type="radio" value="1on1" required>1on1</label>
+                <label><input v-model="style" name="style" type="radio" value="乱闘">乱闘</label>
+                <label><input v-model="style" name="style" type="radio" value="チーム乱闘">チーム乱闘</label>
             </td>
         </tr>
         <tr>
@@ -311,9 +262,9 @@ var sample = new Vue({
                 <b>*ルール</b>
             </td>
             <td>
-                <input v-model="rule" type="radio" name="rule" value="ストック制" required>ストック制
-                <input v-model="rule" type="radio" name="rule" value="タイム制">タイム制
-                <input v-model="rule" type="radio" name="rule" value="体力制">体力制
+                <label><input v-model="rule" type="radio" name="rule" value="ストック制" required>ストック制</label>
+                <label><input v-model="rule" type="radio" name="rule" value="タイム制">タイム制</label>
+                <label><input v-model="rule" type="radio" name="rule" value="体力制">体力制</label>
             </td>
         </tr>
         <tr v-if="rule == 'ストック制'">
@@ -426,8 +377,8 @@ var sample = new Vue({
                 <b>配信</b>
             </td>
             <td>
-                <input v-model="cast" type="radio" name="cast" value="true">OK
-                <input v-model="cast" type="radio" name="cast" value="false">NG
+                <label><input v-model="cast" type="radio" name="cast" value="true">OK</label>
+                <label><input v-model="cast" type="radio" name="cast" value="false">NG</label>
             </td>
         </tr>
         <tr>
@@ -478,34 +429,47 @@ var app = new Vue({
     }
 })
 
+
 var clipboard = new Clipboard('#copy');
 clipboard.on('success', function (e) {
     sample.success = true;
     e.clearSelection();
 });
 
-socket.on("created", function (data) {
-    data["key"] = app.roomList.length;
-    app.roomList.unshift(data);
+var roomListController = {
+    create: function (data) {
+        data.detail["key"] = app.roomList.length;
+        app.roomList.unshift(data.detail);
+    },
+    loadList: function (rooms) {
+        if (rooms.detail.length == 0) {
+            sessionStorage["roomFlag"] = false;
+            sample.roomFlag = false;
+        }
+        for (var i = 0; i < rooms.detail.length; i++) {
+            room = rooms.detail[i];
+            room["key"] = app.roomList.length;
+            app.roomList.unshift(room);
+        }
+    },
+    updateList: function (rooms) {
+        app.roomList = [];
+        for (var i = 0; i < rooms.detail.length; i++) {
+            room = rooms.detail[i];
+            room["key"] = app.roomList.length;
+            app.roomList.unshift(room);
+        }
+    }
+}
+
+roomListController.loadList({ detail: currentRooms });
+
+socketEvent.addEventListener("created", roomListController.create);
+socketEvent.addEventListener("updated", roomListController.updateList);
+
+socketEvent.addEventListener("alert_message", function (data) {
+    console.debug(data)
+    window.alert(data.detail);
 });
 
-socket.on("return_list", function (rooms) {
-    if (rooms.length == 0) {
-        sessionStorage["roomFlag"] = false;
-        sample.roomFlag = false;
-    }
-    for (var i = 0; i < rooms.length; i++) {
-        room = rooms[i];
-        room["key"] = app.roomList.length;
-        app.roomList.unshift(room);
-    }
-});
-
-socket.on("updated", function (rooms) {
-    app.roomList = [];
-    for (var i = 0; i < rooms.length; i++) {
-        room = rooms[i];
-        room["key"] = app.roomList.length;
-        app.roomList.unshift(room);
-    }
-})
+socketEvent.ready();

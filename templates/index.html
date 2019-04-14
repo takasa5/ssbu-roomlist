@@ -11,11 +11,19 @@
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.6.0/clipboard.min.js"></script>
+    <script>
+        currentRooms = [( currentRooms|tojson|escape|safe )];
+    </script>
+    <script src="/static/init.js"></script>
+    <script src="/static/main.js?17" defer></script>
 </head>
 <body>
     <h1 style="text-align: center">とし部屋</h1>
     <div id="app">
         <h2 style="text-align: center">部屋一覧</h2>
+        <div class="last-update">
+            <div id="last-update-date">最終更新: [( lastUpdate )]</div>
+        </div>
         <div v-if="roomList.length == 0" style="text-align: center">現在立っている部屋はありません。</div>
         <room-list
             v-for="room in roomList"
@@ -27,7 +35,6 @@
     <h2 style="text-align:center">部屋立て</h2>
     <div id="display">
     </div>
-    <script src="/static/main.js?16"></script>
     <hr>
     <footer>
         <h3>使い方</h3>

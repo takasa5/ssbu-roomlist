@@ -4,20 +4,60 @@ import json
 import requests
 import hashlib
 import datetime
-from html import escape
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
+from html import escape
+from urllib.parse import urlparse
 
-app = Flask(__name__)
+
+class CustomFlask(Flask):
+    jinja_options = Flask.jinja_options.copy()
+    jinja_options.update(dict(
+        variable_start_string='[(',
+        variable_end_string=')]'
+    ))
+
+
+app = CustomFlask(__name__)
 app.secret_key = os.urandom(24)
 socketio = SocketIO(app)
 ROOM_LIST = []
 JST = datetime.timezone(datetime.timedelta(hours=+9), 'JST')
+HTTP_PREFIXES = (
+    "http",
+    "https"
+)
+ALLOWED_CASTS = (
+    "youtube.com",
+    "youtu.be",
+    "cavelis.net",
+    "twitch.tv",
+)
+
+
+def check_cast_url(url):
+    parsed_url = urlparse(url)
+    if (parsed_url.scheme.lower().startswith(HTTP_PREFIXES)
+            and parsed_url.netloc.lower().endswith(ALLOWED_CASTS)):
+        return True
+    else:
+        return False
+
+
+def is_filled_str(string):
+    if type(string) == str and string.strip():
+        return True
+    else:
+        return False
 
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template(
+        'index.html',
+        currentRooms=ROOM_LIST,
+        lastUpdate=datetime.datetime.now(JST).strftime('%X')
+    )
 
 
 @app.route('/history')
@@ -25,14 +65,14 @@ def history():
     return render_template('history.html')
 
 
-@socketio.on("open")
-def return_list():
-    emit("return_list", ROOM_LIST)
-
-
 @socketio.on("create")
 def add_room(data):
-    # notification to discord
+    if ("cast_url" in data and is_filled_str(data["cast_url"])
+            and not check_cast_url(data["cast_url"])):
+        # Failed the check
+        data["cast_url"] = ""
+        emit("alert_message", "許可されていないURLが含まれています")
+
     sanitized_data = {}
     for key in data:
         if type(data[key]) == str:
@@ -40,6 +80,7 @@ def add_room(data):
         else:
             sanitized_data[key] = data[key]
 
+    # notification to discord
     url = os.getenv("DISCORD_WEBHOOK")
     headers = {
         'Content-Type': 'application/json',
@@ -90,7 +131,8 @@ def add_room(data):
     content = {
         "username": "とし部屋通知",
         # "avatar_url": url_for("static", filename="img/icon.jpg"),
-        "content": "【ID】" + sanitized_data["id"] + "\r【パス】" + sanitized_data["pass"],
+        "content": "【ID】" + sanitized_data["id"]
+        + "\r【パス】" + sanitized_data["pass"],
         "embeds": [
             {
                 "description": sanitized_data["overview"],
@@ -121,15 +163,25 @@ def add_room(data):
 def update_room(password, uid, key, data):
     global ROOM_LIST
     room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
-    password = hashlib.sha256(password.encode()).hexdigest()
-    if room["editpass"] != password:
-        return
-    sanitized_data = {}
-    if type(data) is str:
-        room[key] = escape(data)
+    if key in room:
+        password = hashlib.sha256(password.encode()).hexdigest()
+        if room["editpass"] == password:
+            room[key] = data
+            emit("updated", ROOM_LIST, broadcast=True)
+        else:
+            emit("alert_message", "パスワードが違います")
+
+
+@socketio.on("update_cast")
+def update_room_cast(uid, key, data):
+    global ROOM_LIST
+    if key == 'cast_url' and is_filled_str(data) and check_cast_url(data):
+        # Passed the check
+        room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
+        room["cast_url"] = data
+        emit("updated", ROOM_LIST, broadcast=True)
     else:
-        room[key] = data
-    emit("updated", ROOM_LIST, broadcast=True)
+        emit("alert_message", "許可されていないURLです")
 
 
 @socketio.on("delete")

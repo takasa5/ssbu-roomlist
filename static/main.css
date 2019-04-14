@@ -23,7 +23,7 @@ footer {
     width: 100%;
     max-width: 1000px;
     margin-left: auto;
-    margin-right: auto; 
+    margin-right: auto;
     margin-bottom: 5px;
 }
 
@@ -161,4 +161,18 @@ td {
 
 .overview > .content {
     text-indent: 1.5em;
+}
+
+.last-update {
+    position: relative;
+    height: 0;
+    width: 100%;
+    max-width: 1000px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.last-update > div {
+    position: absolute;
+    bottom: 0;
 }
