@@ -65,6 +65,11 @@ def history():
     return render_template('history.html')
 
 
+@app.route('/howto')
+def howto():
+    return render_template('howto.html')
+
+
 @socketio.on("create")
 def add_room(data):
     if ("cast_url" in data and is_filled_str(data["cast_url"])

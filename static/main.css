@@ -176,3 +176,8 @@ td {
     position: absolute;
     bottom: 0;
 }
+
+#howto {
+    width: 800px;
+    max-width: 100%;
+}
