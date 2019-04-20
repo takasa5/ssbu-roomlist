@@ -89,7 +89,7 @@ var c = Vue.component('room-list', {
 })
 
 var images = [];
-for (var i = 0; i < 104; i++) {
+for (var i = 0; i < 105; i++) {
     images.push("/static/img/" + i + ".jpg?0417");
 }
 
