@@ -1,4 +1,4 @@
-gevent==1.4.0
+eventlet==0.17.4
 Flask==1.0.2
 Flask-SocketIO==2.9.3
 gunicorn==19.7.1
