@@ -177,6 +177,10 @@ td {
     bottom: 0;
 }
 
+.cast-allow {
+    position: absolute;
+}
+
 #howto {
     width: 800px;
     max-width: 100%;

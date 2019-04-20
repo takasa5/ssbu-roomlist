@@ -11,6 +11,8 @@
     <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.0.4/socket.io.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/1.6.0/clipboard.min.js"></script>
+    <script src="https://unpkg.com/@ungap/event-target@0.1.0/min.js"></script>
+    <script src="https://unpkg.com/clientjs@0.1.11/dist/client.min.js"></script>
     <script>
         currentRooms = [( currentRooms|tojson|escape|safe )];
     </script>
@@ -18,6 +20,7 @@
     <script src="/static/main.js?17" defer></script>
 </head>
 <body>
+    <noscript>JavaScriptを有効にしてください。</noscript>
     <h1 style="text-align: center">とし部屋</h1>
     <div id="app">
         <h2 style="text-align: center">部屋一覧</h2>
@@ -39,7 +42,7 @@
     <footer>
         <h3>使い方</h3>
         ・<a href="/howto">詳細はこちら</a><br>
-        ・ブラウザはIE非推奨です。<br>
+        ・ブラウザはIE11未満非推奨です。<br>
         ・javascriptを有効にしてください。<br>
         ・良心的に楽しく使ってください。<br>
         <a href="/history">更新履歴</a>

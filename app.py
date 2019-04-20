@@ -1,5 +1,5 @@
 import os
-import uuid
+from uuid import uuid4
 import json
 import requests
 import hashlib
@@ -22,6 +22,7 @@ app = CustomFlask(__name__)
 app.secret_key = os.urandom(24)
 socketio = SocketIO(app)
 ROOM_LIST = []
+ROOM_AUTHORS = {}
 JST = datetime.timezone(datetime.timedelta(hours=+9), 'JST')
 HTTP_PREFIXES = (
     "http",
@@ -71,7 +72,7 @@ def howto():
 
 
 @socketio.on("create")
-def add_room(data):
+def add_room(client_uid, data):
     if ("cast_url" in data and is_filled_str(data["cast_url"])
             and not check_cast_url(data["cast_url"])):
         # Failed the check
@@ -136,14 +137,14 @@ def add_room(data):
     content = {
         "username": "とし部屋通知",
         # "avatar_url": url_for("static", filename="img/icon.jpg"),
-        "content": "【ID】" + sanitized_data["id"]
-        + "\r【パス】" + sanitized_data["pass"],
+        "content": "【ID】" + data["id"]
+        + "\r【パス】" + data["pass"],
         "embeds": [
             {
-                "description": sanitized_data["overview"],
+                "description": data["overview"],
                 "color": int("800000", 16),
                 "thumbnail": {
-                    "url": sanitized_data["icon"]
+                    "url": data["icon"]
                 },
                 "fields": fields
             }
@@ -158,72 +159,80 @@ def add_room(data):
 
     sanitized_data["editpass"] = hashlib.sha256(
         sanitized_data["editpass"].encode()).hexdigest()
-    sanitized_data["uuid"] = str(uuid.uuid4())
+    sanitized_data["room_uuid"] = str(uuid4())
     sanitized_data["start"] = datetime.datetime.now(JST).strftime('%H:%M')
     ROOM_LIST.append(sanitized_data)
+    ROOM_AUTHORS.update({sanitized_data["room_uuid"]: client_uid})
+    emit("accepted", {"room_uuid": sanitized_data["room_uuid"]})
     emit("created", sanitized_data, broadcast=True)
 
 
 @socketio.on("update")
-def update_room(password, uid, key, data):
+def update_room(password, client_uid, room_uid, data):
     global ROOM_LIST
-    room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
-    if key in room:
-        password = hashlib.sha256(password.encode()).hexdigest()
-        if room["editpass"] == password:
-            room[key] = data
-            emit("updated", ROOM_LIST, broadcast=True)
-        else:
-            emit("alert_message", "パスワードが違います")
+    room = [r for r in ROOM_LIST if r["room_uuid"] == room_uid][0]
+    for key in data:
+        if key in room:
+            password = hashlib.sha256(password.encode()).hexdigest()
+            if (room["editpass"] == password
+                    or ROOM_AUTHORS[room_uid] == client_uid):
+                room[key] = data[key]
+                emit("updated", ROOM_LIST, broadcast=True)
+            else:
+                emit("alert_message", "パスワードが違います")
 
 
 @socketio.on("update_cast")
-def update_room_cast(uid, key, data):
+def update_room_cast(client_uid, room_uid, key, data):
     global ROOM_LIST
     if key == 'cast_url' and is_filled_str(data) and check_cast_url(data):
         # Passed the check
-        room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
+        room = [r for r in ROOM_LIST if r["room_uuid"] == room_uid][0]
         room["cast_url"] = data
         emit("updated", ROOM_LIST, broadcast=True)
-    else:
+    elif is_filled_str(data):
         emit("alert_message", "許可されていないURLです")
+    else:
+        pass
 
 
 @socketio.on("delete")
-def delete_room(password, uid):
+def delete_room(password, client_uid, room_uid):
     global ROOM_LIST
-    room = [r for r in ROOM_LIST if r["uuid"] == uid][0]
+    room = [r for r in ROOM_LIST if r["room_uuid"] == room_uid][0]
     password = hashlib.sha256(password.encode()).hexdigest()
-    if room["editpass"] != password:
-        return
-
-    url = os.getenv("DISCORD_WEBHOOK")
-    headers = {
-        'Content-Type': 'application/json',
-    }
-    content = {
-        "username": "とし部屋通知",
-        "content": "ID:" + room["id"] + "は解散しました",
-        "embeds": [
-            {
-                "color": int("800000", 16),
-                "thumbnail": {
-                    "url": room["icon"]
+    if (room["editpass"] == password
+            or ROOM_AUTHORS[room_uid] == client_uid):
+        url = os.getenv("DISCORD_WEBHOOK")
+        headers = {
+            'Content-Type': 'application/json',
+        }
+        content = {
+            "username": "とし部屋通知",
+            "content": "ID:" + room["id"] + "は解散しました",
+            "embeds": [
+                {
+                    "color": int("800000", 16),
+                    "thumbnail": {
+                        "url": room["icon"]
+                    }
                 }
-            }
-        ]
-    }
-    res = requests.post(
-        url,
-        json.dumps(content),
-        headers=headers
-    )
-    print(res)
+            ]
+        }
+        res = requests.post(
+            url,
+            json.dumps(content),
+            headers=headers
+        )
+        print(res)
 
-    rooms = [r for r in ROOM_LIST if r["uuid"] != uid]
-    del ROOM_LIST
-    ROOM_LIST = rooms
-    emit("updated", ROOM_LIST, broadcast=True)
+        rooms = [r for r in ROOM_LIST if r["room_uuid"] != room_uid]
+        del ROOM_LIST
+        ROOM_LIST = rooms
+        emit("accepted", {"room_removed": True})
+        emit("updated", ROOM_LIST, broadcast=True)
+    else:
+        emit("alert_message", "パスワードが違います")
 
 
 if __name__ == '__main__':
