@@ -1,0 +1,87 @@
+/* eslint-disable no-console */
+const path = require("path");
+const webpack = require("webpack");
+const CleanWebpackPlugin = require("clean-webpack-plugin");
+const VueLoaderPlugin = require("vue-loader/lib/plugin");
+const TerserPlugin = require("terser-webpack-plugin");
+const Autoprefixer = require("autoprefixer");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+
+module.exports = {
+    mode: "production",
+    entry: {
+        "init.js": path.join(__dirname, "src", "init.js"),
+        "main.js": path.join(__dirname, "src", "main.js"),
+        "index.css": path.join(__dirname, "src", "index.css")
+    },
+    output: {
+        path: path.join(__dirname, "static"),
+        publicPath: "/static/",
+        filename: "[name]",
+        chunkFilename: "[hash:8].chunk"
+    },
+    module: {
+        rules: [
+            {
+                enforce: "pre",
+                test: /\.js$/,
+                include: [path.resolve(__dirname, "src")],
+                exclude: [path.resolve(__dirname, "node_modules")],
+                loader: "eslint-loader"
+            },
+            {
+                test: /\.js$/,
+                include: [path.resolve(__dirname, "src")],
+                loader: "babel-loader",
+                query: {
+                    presets: [["@babel/preset-env", { useBuiltIns: "usage", corejs: 3 }]],
+                    plugins: [["@babel/plugin-proposal-pipeline-operator", { proposal: "minimal" }]]
+                }
+            },
+            {
+                test: /\.vue$/,
+                include: [path.resolve(__dirname, "src")],
+                loader: "vue-loader"
+            },
+            {
+                test: /\.css$/,
+                include: [path.resolve(__dirname, "src")],
+                use: [
+                    MiniCssExtractPlugin.loader,
+                    "css-loader",
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            ident: "postcss",
+                            plugins: [Autoprefixer]
+                        }
+                    }
+                ]
+            }
+        ]
+    },
+    optimization: {
+        minimizer: [
+            new TerserPlugin({
+                sourceMap: false
+            })
+        ]
+    },
+    plugins: [
+        new webpack.ProgressPlugin(),
+        new CleanWebpackPlugin({
+            verbose: false,
+            cleanOnceBeforeBuildPatterns: ["init.js*", "main.js*", "index.css*"]
+        }),
+        new VueLoaderPlugin(),
+        new MiniCssExtractPlugin({
+            filename: "./[name]",
+            chunkFilename: "./[hash:8].chunk"
+        })
+    ],
+    resolve: {
+        extensions: [".json", ".js"],
+        modules: ["src", "node_modules"]
+    },
+    stats: "errors-only"
+};

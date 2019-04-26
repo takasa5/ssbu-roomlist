@@ -1,0 +1,44 @@
+env:
+    browser: true
+extends:
+    - airbnb-base
+    - plugin:import/errors
+    - plugin:import/warnings
+    - plugin:vue/essential
+    - plugin:prettier/recommended
+globals:
+    io: true
+    socket: true
+    Clipboard: true
+    currentRooms: true
+parserOptions:
+    parser: babel-eslint
+    ecmaVersion: 2018
+    sourceType: module
+plugins:
+    - vue
+rules:
+    quotes:
+        - error
+        - double
+    semi:
+        - error
+        - always
+    linebreak-style:
+        - error
+        - windows
+    comma-dangle:
+        - error
+        - never
+    no-redeclare: error
+    no-shadow: error
+    no-var: error
+    no-bitwise: 'off'
+    import/no-extraneous-dependencies: 'off'
+    vue/eqeqeq: error
+    vue/html-self-closing:
+        - error
+        - html:
+            void: always
+settings:
+    import/resolver: webpack
