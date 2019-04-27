@@ -25,7 +25,7 @@ export function castText(room) {
  */
 export function roomClass(room) {
     const classes = {
-        full: room.member === room.capacity
+        full: parseInt(room.member, 10) >= parseInt(room.capacity, 10)
     };
 
     if (room.custom === "on") {

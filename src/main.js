@@ -4,6 +4,9 @@ import roomListContainer from "roomListContainer.vue";
 import roomListEntry from "roomListEntry.vue";
 import roomSample from "roomSample.vue";
 
+// 一時的な値をリセット
+clientData.onetimeRoomUuid = null;
+
 Vue.component("room-list", roomListEntry);
 
 window.app = new Vue(roomListContainer);
@@ -62,6 +65,10 @@ const roomListController = {
 };
 
 roomListController.loadList({ detail: currentRooms });
+
+window.socketEvent.addEventListener("reconnect", () => {
+    window.socket.emit("request_update");
+});
 
 window.socketEvent.addEventListener("created", roomListController.create);
 window.socketEvent.addEventListener("updated", roomListController.updateList);

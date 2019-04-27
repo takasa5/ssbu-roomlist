@@ -551,7 +551,7 @@ export default {
                     overview: this.overview,
                     change: this.change,
                     member: 1,
-                    capacity: this.capacity,
+                    capacity: parseInt(this.capacity, 10),
                     deadline: this.deadline,
                     editpass: this.editpass,
                     id_edit: false,
@@ -583,7 +583,7 @@ export default {
                         custom: this.custom,
                         overview: this.overview,
                         change: this.change,
-                        capacity: this.capacity,
+                        capacity: parseInt(this.capacity, 10),
                         deadline: this.deadline,
                         cast: this.cast,
                         cast_url: this.cast_url
@@ -591,8 +591,8 @@ export default {
                 );
             }
 
-            if (window.editOnce === true) {
-                clientData.roomUuid = null;
+            if (clientData.onetimeRoomUuid) {
+                clientData.onetimeRoomUuid = null;
                 Object.assign(this.$data, defaultData());
                 document.getElementById("inputArea").reset();
             }

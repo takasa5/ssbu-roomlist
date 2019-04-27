@@ -78,6 +78,7 @@ def get_cast_title(url):
                             headers=headers_json,
                             timeout=6.5
                             )
+                    print(res)
                     if res.status_code == 200:
                         json_dic = res.json()
                         stream_name = json_dic.get("stream_name")
@@ -101,6 +102,7 @@ def get_cast_title(url):
             api_url = 'https://www.cavelis.net/api/summary' \
                 f'?devkey={devkey}&stream_name={stream_name}'
             res = requests.get(api_url, headers=headers_json, timeout=6.5)
+            print(res)
             if res.status_code == 200:
                 json_dic = res.json()
                 stream_title = json_dic.get("title")
@@ -150,16 +152,18 @@ def add_room(client_uid, data):
     global ROOM_LIST
     global ROOM_SECRETS
     global ALLOWED_KEYS
+
+    sanitized_data = {}
+
     if "cast_url" in data and is_filled_str(data["cast_url"]):
         if check_cast_url(data["cast_url"]):
             # Passed the check
-            data["cast_title"] = get_cast_title(data["cast_url"])
+            sanitized_data["cast_title"] = get_cast_title(data["cast_url"])
         else:
             # Failed the check
-            data["cast_url"] = ""
+            sanitized_data["cast_url"] = ""
             emit("alert_message", "許可されていないURLが含まれています")
 
-    sanitized_data = {}
     for key in data:
         if key in ALLOWED_KEYS:
             sanitized_data[key] = data[key]
@@ -258,9 +262,20 @@ def update_room(password, client_uid, room_uid, data):
         if (ROOM_SECRETS[room_uid]["editpass"] == password
                 or ROOM_SECRETS[room_uid]["author"] == client_uid):
             for key in data:
-                if key in room:
+                if key == "cast_url":
+                    if (is_filled_str(data["cast_url"])
+                            and data["cast_url"] != room.get("cast_url")
+                            and check_cast_url(data["cast_url"])):
+                        room["cast_url"] = data["cast_url"]
+                        room["cast_title"] = get_cast_title(data["cast_url"])
+                    else:
+                        room["cast_url"] = ""
+                        room["cast_title"] = ""
+                elif key in ALLOWED_KEYS:
                     room[key] = data[key]
-                    emit("updated", ROOM_LIST, broadcast=True)
+                else:
+                    pass
+            emit("updated", ROOM_LIST, broadcast=True)
         else:
             emit("alert_message", "パスワードが違います")
     except IndexError:
@@ -348,12 +363,18 @@ def delete_room(password, client_uid, room_uid):
             rooms = [r for r in ROOM_LIST if r["room_uuid"] != room_uid]
             del ROOM_LIST
             ROOM_LIST = rooms
+            ROOM_SECRETS.pop(room_uid, None)
             emit("accepted", {"room_removed": True})
             emit("updated", ROOM_LIST, broadcast=True)
         else:
             emit("alert_message", "パスワードが違います")
     else:
         pass
+
+
+@socketio.on("request_update")
+def response_update():
+    emit("updated", ROOM_LIST)
 
 
 if __name__ == '__main__':

@@ -132,14 +132,14 @@ export default {
          * メンバーを加算する。
          */
         addMember() {
-            if (this.room.member >= this.room.capacity) return;
+            if (parseInt(this.room.member, 10) >= parseInt(this.room.capacity, 10)) return;
             window.socket.emit(
                 "update",
                 window.sample.editpass,
                 clientData.clientUuid,
                 this.room.room_uuid,
                 {
-                    member: this.room.member + 1
+                    member: parseInt(this.room.member, 10) + 1
                 }
             );
         },
@@ -147,7 +147,7 @@ export default {
          * メンバーを減算し、メンバーが0になった場合は削除する。
          */
         subMember() {
-            if (this.room.member === 1) {
+            if (parseInt(this.room.member, 10) === 1) {
                 window.socket.emit(
                     "delete",
                     window.sample.editpass,
@@ -162,7 +162,7 @@ export default {
                     clientData.clientUuid,
                     this.room.room_uuid,
                     {
-                        member: this.room.member - 1
+                        member: parseInt(this.room.member, 10) - 1
                     }
                 );
             }
@@ -194,8 +194,7 @@ export default {
         },
         editRoom() {
             if (clientData.roomUuid !== this.room.room_uuid) {
-                window.editOnce = true;
-                clientData.roomUuid = this.room.room_uuid;
+                clientData.onetimeRoomUuid = this.room.room_uuid;
                 clientData.syncRoomData();
             }
             window.sample.roomFlag = true;
@@ -204,7 +203,7 @@ export default {
             document.getElementById("room-edit").getBoundingClientRect().top
                 |> (_ => window.scrollBy(0, _));
 
-            if (window.editOnce === true) {
+            if (clientData.onetimeRoomUuid) {
                 document.getElementById("inp_editpass").focus();
             }
         }

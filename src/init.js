@@ -104,6 +104,13 @@ window.socket.on("created", data => {
     });
 });
 
+window.socket.on("reconnect", data => {
+    window.socketEvent.proxy({
+        eventName: "reconnect",
+        data
+    });
+});
+
 window.socket.on("updated", data => {
     window.socketEvent.proxy({
         eventName: "updated",

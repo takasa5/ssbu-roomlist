@@ -20,14 +20,34 @@ const clientData = {
         return uuid;
     },
     get roomUuid() {
+        const onetimeRoomUuid = localStorage.getItem("onetime_room_uuid");
+        if (onetimeRoomUuid) {
+            return onetimeRoomUuid;
+        }
         return localStorage.getItem("room_uuid") || null;
     },
     set roomUuid(uuid) {
         if (!uuid) {
             localStorage.removeItem("room_uuid");
+            localStorage.removeItem("onetime_room_uuid");
         } else {
             try {
                 localStorage.setItem("room_uuid", uuid);
+            } catch (e) {
+                window.console.error(e);
+            }
+        }
+        return uuid;
+    },
+    get onetimeRoomUuid() {
+        return localStorage.getItem("onetime_room_uuid");
+    },
+    set onetimeRoomUuid(uuid) {
+        if (!uuid) {
+            localStorage.removeItem("onetime_room_uuid");
+        } else {
+            try {
+                localStorage.setItem("onetime_room_uuid", uuid);
             } catch (e) {
                 window.console.error(e);
             }

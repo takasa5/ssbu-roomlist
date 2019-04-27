@@ -8,7 +8,6 @@ extends:
     - plugin:prettier/recommended
 globals:
     io: true
-    socket: true
     Clipboard: true
     currentRooms: true
 parserOptions:
