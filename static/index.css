@@ -201,8 +201,10 @@ td {
     color: #6a6c81;
 }
 
-.cast-container > .cast-title {
+.cast-container > .cast-link {
+    display: block;
     margin: auto 5px auto 0;
+    word-break: break-word;
 }
 
 .edit-room {

@@ -417,9 +417,7 @@
                 <div class="cast-status" :class="castText.class">
                     {{ castText.text }}
                 </div>
-                <div v-if="cast_url !== ''" class="cast-title">
-                    <a :href="cast_url">配信タイトル</a>
-                </div>
+                <a v-if="cast_url !== ''" :href="cast_url" class="cast-link">配信タイトル</a>
                 <div v-if="cast === 'allow'">
                     <i class="fas fa-edit" />
                 </div>

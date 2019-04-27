@@ -84,9 +84,13 @@
             <div class="cast-status" :class="castText.class">
                 {{ castText.text }}
             </div>
-            <div v-if="room.cast_url !== ''" v-show="!room.url_edit" class="cast-title">
-                <a :href="room.cast_url">{{ room.cast_title }}</a>
-            </div>
+            <a
+                v-if="room.cast_url !== ''"
+                v-show="!room.url_edit"
+                :href="room.cast_url"
+                class="cast-link"
+                >{{ room.cast_title }}</a
+            >
             <div v-if="room.cast === 'allow'">
                 <input v-show="room.url_edit" v-model="room.new_url" autofocus type="url" />
                 <i v-show="!room.url_edit" class="fas fa-edit" @click="room.url_edit = true" />

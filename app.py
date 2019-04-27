@@ -85,6 +85,8 @@ def get_cast_title(url):
                             raise GetCastError
                         else:
                             return stream_name
+                    elif res.status_code == 404:
+                        return None
                     else:
                         raise GetCastError
             except (GetCastError, requests.Timeout):
@@ -106,6 +108,8 @@ def get_cast_title(url):
                     raise GetCastError
                 else:
                     return stream_title
+            elif res.status_code == 404:
+                return None
             else:
                 raise GetCastError
         except (GetCastError, requests.Timeout):
