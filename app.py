@@ -25,7 +25,7 @@ ROOM_SECRETS = {}
 ALLOWED_KEYS = [
     "icon", "power", "id", "pass", "style", "stock", "rule",
     "time", "ic", "stage", "custom", "overview", "change",
-    "member", "capacity", "deadline", "editpass", "id_edit", "room_uuid"
+    "member", "capacity", "deadline", "editpass", "id_edit", "room_uuid",
     "new_id", "cast", "cast_url", "url_edit", "new_url", "cast_title"
 ]
 JST = datetime.timezone(datetime.timedelta(hours=+9), 'JST')
@@ -249,6 +249,8 @@ def add_room(client_uid, data):
     ROOM_SECRETS[sanitized_data["room_uuid"]]["author"] = client_uid
     ROOM_SECRETS[sanitized_data["room_uuid"]]["editpass"] = \
         sanitized_data["editpass"]
+    if sanitized_data["cast_url"]:
+        ROOM_SECRETS[sanitized_data["room_uuid"]]["cast_author"] = client_uid
     emit("accepted", {"room_uuid": sanitized_data["room_uuid"]})
     emit("created", sanitized_data, broadcast=True)
 
