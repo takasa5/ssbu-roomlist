@@ -41,6 +41,51 @@ ALLOWED_CASTS = (
 )
 
 
+def log_to_discord(content):
+    url = os.getenv("LOG_WEBHOOK")
+    headers = {
+        'Content-Type': 'application/json',
+    }
+    content_dict = {}
+    if type(content) == requests.Response:
+        content_dict["username"] = "Request response"
+        content_dict["embeds"] = [{
+            "fields": [{
+                    "name": "Location",
+                    "value": re.sub(r"(devkey=)[0-9A-Za-z]{32}",
+                                    r"\1masked",
+                                    content.url)
+                },
+                {
+                    "name": "Status code",
+                    "value": content.status_code
+                },
+                {
+                    "name": "Content",
+                    "value": json.dumps(
+                                json.loads(content.text),
+                                indent="", ensure_ascii=False)
+                }],
+            "timestamp": datetime.datetime.now(JST).isoformat()
+        }]
+    elif type(content) == str:
+        content_dict = {
+            "content": content,
+            "embeds": [{
+                "timestamp": datetime.datetime.now(JST).isoformat()
+            }]
+        }
+    else:
+        return
+    res = requests.post(
+        url,
+        json.dumps(content_dict),
+        headers=headers,
+        timeout=6.5
+    )
+    print(res)
+
+
 def check_cast_url(url):
     parsed_url = urlparse(url)
     if (parsed_url.scheme.lower().startswith(HTTP_PREFIXES)
@@ -74,12 +119,12 @@ def get_cast_title(url):
                     api_url = 'https://www.cavelis.net/api/live_url/' \
                               + user_name
                     res = requests.get(
-                            api_url,
-                            headers=headers_json,
-                            timeout=6.5
-                            )
-                    print(res)
-                    if res.status_code == 200:
+                        api_url,
+                        headers=headers_json,
+                        timeout=6.5
+                    )
+                    log_to_discord(res)
+                    if res.ok:
                         json_dic = res.json()
                         stream_name = json_dic.get("stream_name")
                         if stream_name is None:
@@ -102,8 +147,8 @@ def get_cast_title(url):
             api_url = 'https://www.cavelis.net/api/summary' \
                 f'?devkey={devkey}&stream_name={stream_name}'
             res = requests.get(api_url, headers=headers_json, timeout=6.5)
-            print(res)
-            if res.status_code == 200:
+            log_to_discord(res)
+            if res.ok:
                 json_dic = res.json()
                 stream_title = json_dic.get("title")
                 if stream_title is None or not is_filled_str(stream_title):
