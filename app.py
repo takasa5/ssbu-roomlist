@@ -40,6 +40,9 @@ ALLOWED_CASTS = (
     "twitch.tv",
 )
 
+# バグ取り用
+TEMPORARY_DELCOUNT = 0
+
 
 def log_to_discord(content):
     url = os.getenv("LOG_WEBHOOK")
@@ -379,8 +382,15 @@ def update_room_cast(password, client_uid, room_uid, key, data):
 def delete_room(password, client_uid, room_uid):
     global ROOM_LIST
     global ROOM_SECRETS
+    global TEMPORARY_DELCOUNT
     room = [r for r in ROOM_LIST if r["room_uuid"] == room_uid]
     if room:
+        TEMPORARY_DELCOUNT = TEMPORARY_DELCOUNT + 1
+        log_to_discord('Got \"delete\" event.\n'
+                       f'room uuid: {room_uid}\n'
+                       f'room member: {room[0]["member"]}\n'
+                       f'delete count: {TEMPORARY_DELCOUNT}\ntimestamp:'
+                       f'{datetime.datetime.now(JST).strftime("%F %T")}')
         if (ROOM_SECRETS[room_uid]["editpass"] == password
                 or ROOM_SECRETS[room_uid]["author"] == client_uid):
             url = os.getenv("DISCORD_WEBHOOK")
@@ -417,6 +427,8 @@ def delete_room(password, client_uid, room_uid):
             emit("alert_message", "パスワードが違います")
     else:
         pass
+    # 戻す
+    TEMPORARY_DELCOUNT = 0
 
 
 @socketio.on("request_update")

@@ -369,7 +369,7 @@
             <div class="style">
                 <span v-if="winWidth > 1024">{{ style }}</span>
                 <span v-else>
-                    <span v-if="style.length > 4">{{ style.slice(0, 2) }}</span>
+                    <span v-if="style.length > 4">{{ style.slice(0, 3) }}</span>
                     <span v-else>{{ style }}</span>
                 </span>
             </div>
@@ -417,7 +417,14 @@
                 <div class="cast-status" :class="castText.class">
                     {{ castText.text }}
                 </div>
-                <a v-if="cast_url !== ''" :href="cast_url" class="cast-link">配信タイトル</a>
+                <a
+                    v-if="cast_url !== ''"
+                    :href="cast_url"
+                    class="cast-link"
+                    target="_blank"
+                    rel="noopener"
+                    >配信タイトル</a
+                >
                 <div v-if="cast === 'allow'">
                     <i class="fas fa-edit" />
                 </div>

@@ -28,7 +28,7 @@
             <span v-if="winWidth > 1024">{{ room.style }}</span>
             <span v-else>
                 <span v-if="room.style.length > 4">
-                    {{ room.style[0] + room.style[1] + room.style[2] }}
+                    {{ room.style.slice(0, 3) }}
                 </span>
                 <span v-else>
                     {{ room.style }}
@@ -89,6 +89,8 @@
                 v-show="!room.url_edit"
                 :href="room.cast_url"
                 class="cast-link"
+                target="_blank"
+                rel="noopener"
                 >{{ room.cast_title }}</a
             >
             <div v-if="room.cast === 'allow'">
