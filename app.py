@@ -39,9 +39,18 @@ ALLOWED_CASTS = (
     "cavelis.net",
     "twitch.tv",
 )
-
-# バグ取り用
-TEMPORARY_DELCOUNT = 0
+INSECURE_PASSWORDS = (
+    "4545",
+    "0721",
+    "123",
+    "0123",
+    "1234",
+    "aa",
+    "aaa",
+    "aaaa",
+    "ab",
+    "abc"
+)
 
 
 def log_to_discord(content):
@@ -54,21 +63,21 @@ def log_to_discord(content):
         content_dict["username"] = "Request response"
         content_dict["embeds"] = [{
             "fields": [{
-                    "name": "Location",
-                    "value": re.sub(r"(devkey=)[0-9A-Za-z]{32}",
-                                    r"\1masked",
-                                    content.url)
-                },
+                "name": "Location",
+                "value": re.sub(r"(devkey=)[0-9A-Za-z]{32}",
+                                r"\1masked",
+                                content.url)
+            },
                 {
                     "name": "Status code",
                     "value": content.status_code
-                },
+            },
                 {
                     "name": "Content",
                     "value": json.dumps(
-                                json.loads(content.text),
-                                indent="", ensure_ascii=False)
-                }],
+                        json.loads(content.text),
+                        indent="", ensure_ascii=False)
+            }],
             "timestamp": datetime.datetime.now(JST).isoformat()
         }]
     elif type(content) == str:
@@ -163,10 +172,10 @@ def get_cast_title(url):
             else:
                 raise GetCastError
         except (GetCastError, requests.Timeout):
-            return url
+            return "配信リンク"
     else:
         # タイトル取得未対応の配信
-        return url
+        return "配信リンク"
 
 
 def is_filled_str(string):
@@ -200,6 +209,13 @@ def add_room(client_uid, data):
     global ROOM_LIST
     global ROOM_SECRETS
     global ALLOWED_KEYS
+    global INSECURE_PASSWORDS
+
+    if (is_filled_str(data.get("editpass"))
+            and data["editpass"] in INSECURE_PASSWORDS):
+        emit("alert_message", "そのパスワードは使用できません\n単純なパスワードは許可されていません。")
+        emit("updated", ROOM_LIST, broadcast=True)
+        return
 
     sanitized_data = {}
 
@@ -207,6 +223,7 @@ def add_room(client_uid, data):
         if check_cast_url(data["cast_url"]):
             # Passed the check
             sanitized_data["cast_title"] = get_cast_title(data["cast_url"])
+            sanitized_data["cast_sealed"] = True
         else:
             # Failed the check
             sanitized_data["cast_url"] = ""
@@ -217,6 +234,18 @@ def add_room(client_uid, data):
             sanitized_data[key] = data[key]
         else:
             print("Key is not allowed:", key)
+
+    sanitized_data["room_uuid"] = str(uuid4())
+    sanitized_data["start"] = datetime.datetime.now(JST).strftime('%H:%M')
+    ROOM_LIST.append(sanitized_data)
+    ROOM_SECRETS[sanitized_data["room_uuid"]] = {}
+    ROOM_SECRETS[sanitized_data["room_uuid"]]["author"] = client_uid
+    ROOM_SECRETS[sanitized_data["room_uuid"]]["editpass"] = \
+        sanitized_data["editpass"]
+    if sanitized_data["cast_url"]:
+        ROOM_SECRETS[sanitized_data["room_uuid"]]["cast_author"] = client_uid
+    emit("accepted", {"room_uuid": sanitized_data["room_uuid"]})
+    emit("created", sanitized_data, broadcast=True)
 
     # notification to discord
     url = os.getenv("DISCORD_WEBHOOK")
@@ -290,23 +319,12 @@ def add_room(client_uid, data):
     )
     print(res)
 
-    sanitized_data["room_uuid"] = str(uuid4())
-    sanitized_data["start"] = datetime.datetime.now(JST).strftime('%H:%M')
-    ROOM_LIST.append(sanitized_data)
-    ROOM_SECRETS[sanitized_data["room_uuid"]] = {}
-    ROOM_SECRETS[sanitized_data["room_uuid"]]["author"] = client_uid
-    ROOM_SECRETS[sanitized_data["room_uuid"]]["editpass"] = \
-        sanitized_data["editpass"]
-    if sanitized_data["cast_url"]:
-        ROOM_SECRETS[sanitized_data["room_uuid"]]["cast_author"] = client_uid
-    emit("accepted", {"room_uuid": sanitized_data["room_uuid"]})
-    emit("created", sanitized_data, broadcast=True)
-
 
 @socketio.on("update")
 def update_room(password, client_uid, room_uid, data):
     global ROOM_LIST
     global ROOM_SECRETS
+
     try:
         room = [r for r in ROOM_LIST if r["room_uuid"] == room_uid][0]
         if (ROOM_SECRETS[room_uid]["editpass"] == password
@@ -314,20 +332,35 @@ def update_room(password, client_uid, room_uid, data):
             for key in data:
                 if key == "cast_url":
                     if (is_filled_str(data["cast_url"])
-                            and data["cast_url"] != room.get("cast_url")
                             and check_cast_url(data["cast_url"])):
-                        room["cast_url"] = data["cast_url"]
-                        room["cast_title"] = get_cast_title(data["cast_url"])
+                        if data["cast_url"] != room.get("cast_url"):
+                            room["cast_url"] = data["cast_url"]
+                            room["cast_title"] = \
+                                get_cast_title(data["cast_url"])
+                            room["cast_sealed"] = True
+                            ROOM_SECRETS[room_uid]["cast_author"] = \
+                                client_uid
+
+                        else:
+                            pass
+
                     else:
                         room["cast_url"] = ""
                         room["cast_title"] = ""
+                        room["cast_sealed"] = False
+                        ROOM_SECRETS[room_uid].pop("cast_author", None)
+
                 elif key in ALLOWED_KEYS:
                     room[key] = data[key]
+
                 else:
                     pass
+
             emit("updated", ROOM_LIST, broadcast=True)
+
         else:
             emit("alert_message", "パスワードが違います")
+
     except IndexError:
         pass
 
@@ -355,7 +388,7 @@ def update_room_cast(password, client_uid, room_uid, key, data):
                 # 警告をクライアントに表示する。
                 if not is_filled_str(password):
                     # パスワードが空白の場合の警告
-                    emit("alert_message", "部屋の登録者が追加したURLは上書きできません"
+                    emit("alert_message", "部屋の登録者が追加したURLは上書きできません\n"
                          "あなたが部屋の登録者である場合は、部屋立てフォームにパスワードを入力後再度お試しください。")
                 else:
                     # パスワードが空白ではない場合の警告
@@ -365,15 +398,21 @@ def update_room_cast(password, client_uid, room_uid, key, data):
                 # チェックを通過した場合、変更を行う。
                 room["cast_url"] = data
                 room["cast_title"] = get_cast_title(data)
+                ROOM_SECRETS[room_uid]["cast_author"] = client_uid
+                if client_uid == ROOM_SECRETS[room_uid]["author"]:
+                    # 部屋主が編集した場合編集を封印する
+                    room["cast_sealed"] = True
                 # アップデートされた一覧をブロードキャストする。
                 emit("updated", ROOM_LIST, broadcast=True)
 
         elif is_filled_str(data):
             # チェックを通過しなかったけど何か書いてある場合
             emit("alert_message", "許可されていないURLです")  # 警告をクライアントに表示する。
+
         else:
             # チェックは通過しなかったし、何か書いてあるわけでもない場合
             pass  # なにもしない。
+
     except IndexError:
         pass
 
@@ -382,29 +421,29 @@ def update_room_cast(password, client_uid, room_uid, key, data):
 def delete_room(password, client_uid, room_uid):
     global ROOM_LIST
     global ROOM_SECRETS
-    global TEMPORARY_DELCOUNT
     room = [r for r in ROOM_LIST if r["room_uuid"] == room_uid]
     if room:
-        TEMPORARY_DELCOUNT = TEMPORARY_DELCOUNT + 1
-        log_to_discord('Got \"delete\" event.\n'
-                       f'room uuid: {room_uid}\n'
-                       f'room member: {room[0]["member"]}\n'
-                       f'delete count: {TEMPORARY_DELCOUNT}\ntimestamp:'
-                       f'{datetime.datetime.now(JST).strftime("%F %T")}')
         if (ROOM_SECRETS[room_uid]["editpass"] == password
                 or ROOM_SECRETS[room_uid]["author"] == client_uid):
+            deleted_room = dict(room[0])
+            rooms = [r for r in ROOM_LIST if r["room_uuid"] != room_uid]
+            del ROOM_LIST
+            ROOM_LIST = rooms
+            ROOM_SECRETS.pop(room_uid, None)
+            emit("accepted", {"room_removed": True})
+            emit("updated", ROOM_LIST, broadcast=True)
             url = os.getenv("DISCORD_WEBHOOK")
             headers = {
                 'Content-Type': 'application/json',
             }
             content = {
                 "username": "とし部屋通知",
-                "content": "ID:" + room[0]["id"] + "は解散しました",
+                "content": "ID:" + deleted_room["id"] + "は解散しました",
                 "embeds": [
                     {
                         "color": int("800000", 16),
                         "thumbnail": {
-                            "url": room[0]["icon"]
+                            "url": deleted_room["icon"]
                         }
                     }
                 ]
@@ -416,19 +455,10 @@ def delete_room(password, client_uid, room_uid):
                 timeout=6.5
             )
             print(res)
-
-            rooms = [r for r in ROOM_LIST if r["room_uuid"] != room_uid]
-            del ROOM_LIST
-            ROOM_LIST = rooms
-            ROOM_SECRETS.pop(room_uid, None)
-            emit("accepted", {"room_removed": True})
-            emit("updated", ROOM_LIST, broadcast=True)
         else:
             emit("alert_message", "パスワードが違います")
     else:
         pass
-    # 戻す
-    TEMPORARY_DELCOUNT = 0
 
 
 @socketio.on("request_update")

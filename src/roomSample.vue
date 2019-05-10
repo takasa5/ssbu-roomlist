@@ -358,7 +358,7 @@
                 <img :src="icon" v-if="icon.length > 0" />
             </div>
             <div class="power">
-                {{ power !== "" ? `${power}万` : "" }}
+                {{ power !== "" ? `${power} 万` : "" }}
             </div>
             <div class="id">
                 <span>{{ id }}</span>
@@ -542,6 +542,8 @@ export default {
             this.temp_string = tempString.trim();
         },
         submit() {
+            if (window.roomFlag === true) return;
+
             if (!clientData.roomUuid) {
                 window.socket.emit("create", clientData.clientUuid, {
                     icon: this.icon,

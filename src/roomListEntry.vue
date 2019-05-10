@@ -4,7 +4,7 @@
             <img :src="room.icon" />
         </div>
         <div class="power">
-            {{ room.power !== "" ? `${room.power}万` : "" }}
+            {{ room.power !== "" ? `${room.power} 万` : "" }}
         </div>
         <div class="id">
             <span v-show="!room.id_edit">{{ room.id }}</span>
@@ -93,7 +93,7 @@
                 rel="noopener"
                 >{{ room.cast_title }}</a
             >
-            <div v-if="room.cast === 'allow'">
+            <div v-if="room.cast === 'allow' && (roomOwned === true || room.cast_sealed !== true)">
                 <input v-show="room.url_edit" v-model="room.new_url" autofocus type="url" />
                 <i v-show="!room.url_edit" class="fas fa-edit" @click="room.url_edit = true" />
                 <i v-show="room.url_edit" class="fas fa-undo" @click="changeURL" />
@@ -124,6 +124,9 @@ export default {
         },
         roomClass() {
             return this.room |> roomClass;
+        },
+        roomOwned() {
+            return this.room.room_uuid === clientData.roomUuid;
         }
     },
     methods: {
@@ -149,7 +152,7 @@ export default {
          * メンバーを減算し、メンバーが0になった場合は削除する。
          */
         subMember() {
-            if (parseInt(this.room.member, 10) === 1) {
+            if (parseInt(this.room.member, 10) === 1 && window.sample.roomFlag === true) {
                 window.socket.emit(
                     "delete",
                     window.sample.editpass,

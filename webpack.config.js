@@ -6,6 +6,7 @@ const VueLoaderPlugin = require("vue-loader/lib/plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const Autoprefixer = require("autoprefixer");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const { LicenseWebpackPlugin } = require("license-webpack-plugin");
 
 module.exports = {
     mode: "production",
@@ -63,6 +64,7 @@ module.exports = {
     optimization: {
         minimizer: [
             new TerserPlugin({
+                extractComments: false,
                 sourceMap: false
             })
         ]
@@ -77,6 +79,12 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: "./[name]",
             chunkFilename: "./[hash:8].chunk"
+        }),
+        new LicenseWebpackPlugin({
+            addBanner: true,
+            excludedPackageTest: packageName =>
+                ["loader", "webpack"].some(word => packageName.includes(word)),
+            outputFilename: "[name].LICENSE"
         })
     ],
     resolve: {

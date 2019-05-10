@@ -178,6 +178,13 @@ def test_update_cast(s_client):
     received = s_client.get_received()
     assert len(received) == 1
     assert received[0]["name"] == "updated"
+
+def test_update_cast_from_other(s_client):
+    received = create_room(s_client)
+    assert len(received) == 2
+    assert received[0]["name"] == "accepted"
+    assert received[1]["name"] == "created"
+    room_uuid = received[0]["args"][0]["room_uuid"]
     # 立てた人以外が編集
     client2 = app.socketio.test_client(app.app)
     client2.get_received()

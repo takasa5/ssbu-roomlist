@@ -18,6 +18,10 @@ footer {
     margin: 0 auto;
 }
 
+#ftbl input[type="number"] {
+    width: 8ch;
+}
+
 #pass {
     margin: 0;
     -webkit-appearance: none;
@@ -38,7 +42,7 @@ footer {
     margin-left: auto;
     border-radius: 5px;
     grid-gap: 2px;
-    grid-template-columns: repeat(7, 1fr);
+    grid-template-columns: repeat(7, minmax(0, 1fr));
     grid-template-rows: repeat(4, minmax(2em, -webkit-min-content));
     grid-template-rows: repeat(4, minmax(2em, min-content));
 }
@@ -179,6 +183,7 @@ td {
     padding: 0.2em 5px;
     grid-column: 4 / 7;
     grid-row: 4;
+    word-break: keep-all;
 }
 
 .cast-container > .cast-status {
@@ -203,8 +208,8 @@ td {
 
 .cast-container > .cast-link {
     display: block;
+    overflow: hidden;
     margin: auto 5px auto 0;
-    word-break: break-word;
 }
 
 .edit-room {
@@ -226,9 +231,26 @@ td {
     }
 
     .room-list {
+        width: auto;
         border-width: 0;
+        margin-right: -5px;
         margin-bottom: 10px;
+        margin-left: -5px;
         border-radius: 0;
+    }
+
+    .room-list button {
+        min-width: 20px;
+        padding: 1px 7px;
+        border: none;
+        margin: 0 3px;
+        background: white;
+        border-radius: 3px;
+        box-shadow: 0 1px 1px 1px #0002;
+    }
+
+    .room-list button:active {
+        background: #eee;
     }
 
     .room-list::before {
@@ -320,10 +342,6 @@ td {
     .cast-container {
         grid-column: 1 / 7;
         grid-row: 5;
-    }
-
-    .cast-container > .cast-status.cast-airing {
-        display: none;
     }
 
     .edit-room {
