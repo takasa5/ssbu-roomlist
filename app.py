@@ -295,6 +295,8 @@ def add_room(client_uid, data):
             "value": sanitized_data["stock"],
             "inline": True
         })
+    if sanitized_data["custom"] == "on":
+        fields[6]["value"] = "自作あり/" + fields[6]["value"]
     content = {
         "username": "とし部屋通知",
         # "avatar_url": url_for("static", filename="img/icon.jpg"),
@@ -327,6 +329,11 @@ def update_room(password, client_uid, room_uid, data):
 
     try:
         room = [r for r in ROOM_LIST if r["room_uuid"] == room_uid][0]
+
+        if room["member"] == 1 and data["member"] == 0:
+            log_to_discord(f"called \"update\" with {room['member']} "
+                           f"→ {data['member']} member(s).")
+
         if (ROOM_SECRETS[room_uid]["editpass"] == password
                 or ROOM_SECRETS[room_uid]["author"] == client_uid):
             for key in data:
@@ -423,6 +430,9 @@ def delete_room(password, client_uid, room_uid):
     global ROOM_SECRETS
     room = [r for r in ROOM_LIST if r["room_uuid"] == room_uid]
     if room:
+        log_to_discord("called \"delete\" "
+                       f"with {room[0]['member']} member(s).\n")
+
         if (ROOM_SECRETS[room_uid]["editpass"] == password
                 or ROOM_SECRETS[room_uid]["author"] == client_uid):
             deleted_room = dict(room[0])
@@ -438,8 +448,10 @@ def delete_room(password, client_uid, room_uid):
             }
             content = {
                 "username": "とし部屋通知",
-                "content": "ID:" + deleted_room["id"] + "は解散しました",
-                "embeds": [
+                "content": "ID:" + deleted_room["id"] + "は解散しました"
+            }
+            if deleted_room["icon"] != "":
+                content["embeds"] = [
                     {
                         "color": int("800000", 16),
                         "thumbnail": {
@@ -447,7 +459,6 @@ def delete_room(password, client_uid, room_uid):
                         }
                     }
                 ]
-            }
             res = requests.post(
                 url,
                 json.dumps(content),

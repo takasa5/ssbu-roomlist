@@ -341,6 +341,7 @@
                             type="password"
                             :value.prop="editpass"
                             size="8"
+                            autocomplete="new-password"
                             required
                         />
                         英数8文字以内

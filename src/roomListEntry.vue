@@ -152,7 +152,9 @@ export default {
          * メンバーを減算し、メンバーが0になった場合は削除する。
          */
         subMember() {
-            if (parseInt(this.room.member, 10) === 1 && window.sample.roomFlag === true) {
+            if (window.sample.roomFlag === false) return;
+
+            if (parseInt(this.room.member, 10) === 1) {
                 window.socket.emit(
                     "delete",
                     window.sample.editpass,
