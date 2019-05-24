@@ -233,6 +233,16 @@ def test_update_cast_filled_url(s_client):
     received = s_client.get_received()
     assert len(received) == 1
     assert received[0]["name"] == "updated"
+
+def test_update_cast_filled_url_from_other_without_pass(s_client):
+    received = create_room(
+        s_client,
+        cast_url="https://cavelis.net/live/test"
+    )
+    assert len(received) == 2
+    assert received[0]["name"] == "accepted"
+    assert received[1]["name"] == "created"
+    room_uuid = received[0]["args"][0]["room_uuid"]
     # 別クライアントからパスワード未記入の編集
     client2 = app.socketio.test_client(app.app)
     client2.get_received()
@@ -247,7 +257,18 @@ def test_update_cast_filled_url(s_client):
     assert len(received) == 1
     assert received[0]["name"] == "alert_message"
     assert "あなたが部屋の登録者" in received[0]["args"][0]
+
+def test_update_cast_filled_url_from_other_with_wrong_pass(s_client):
+    received = create_room(
+        s_client,
+        cast_url="https://cavelis.net/live/test"
+    )
+    assert len(received) == 2
+    assert received[0]["name"] == "accepted"
+    assert received[1]["name"] == "created"
+    room_uuid = received[0]["args"][0]["room_uuid"]
     # 別クライアントからパスワード不一致の編集
+    client2 = app.socketio.test_client(app.app)
     client2.get_received()
     client2.emit("update_cast",
         "differentpasswd",
@@ -260,7 +281,18 @@ def test_update_cast_filled_url(s_client):
     assert len(received) == 1
     assert received[0]["name"] == "alert_message"
     assert "あなたが部屋の登録者" not in received[0]["args"][0]
+
+def test_update_cast_filled_url_from_other_with_pass(s_client):
+    received = create_room(
+        s_client,
+        cast_url="https://cavelis.net/live/test"
+    )
+    assert len(received) == 2
+    assert received[0]["name"] == "accepted"
+    assert received[1]["name"] == "created"
+    room_uuid = received[0]["args"][0]["room_uuid"]
     # 別クライアントからパスワード一致の更新
+    client2 = app.socketio.test_client(app.app)
     client2.get_received()
     client2.emit("update_cast",
         "passwd",
