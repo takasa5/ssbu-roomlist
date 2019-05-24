@@ -6,7 +6,7 @@
         <div class="power">
             {{ room.power !== "" ? `${room.power} 万` : "" }}
         </div>
-        <div class="id">
+        <div class="id force-uppercase">
             <span v-show="!room.id_edit">{{ room.id }}</span>
             <input
                 v-show="room.id_edit"
@@ -95,7 +95,14 @@
             >
             <div v-if="room.cast === 'allow' && (roomOwned === true || room.cast_sealed !== true)">
                 <input v-show="room.url_edit" v-model="room.new_url" autofocus type="url" />
-                <i v-show="!room.url_edit" class="fas fa-edit" @click="room.url_edit = true" />
+                <i
+                    v-show="!room.url_edit"
+                    class="fas fa-edit"
+                    @click="
+                        room.new_url = room.cast_url;
+                        room.url_edit = true;
+                    "
+                />
                 <i v-show="room.url_edit" class="fas fa-undo" @click="changeURL" />
             </div>
         </div>

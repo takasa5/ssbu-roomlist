@@ -378,3 +378,7 @@ td {
     max-width: 100%;
 }
 
+.force-uppercase {
+    text-transform: uppercase;
+}
+

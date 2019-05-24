@@ -62,7 +62,6 @@ const clientData = {
             if (room.room_uuid === clientData.roomUuid) {
                 Object.keys(window.sample).forEach(key => {
                     if (typeof room[key] !== "undefined" && key !== "editpass") {
-                        window.console.info(key, window.sample[key], room[key]);
                         window.sample[key] = room[key];
                     }
                 });

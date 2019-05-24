@@ -22,6 +22,7 @@
                             size="8"
                             maxlength="5"
                             pattern="[A-Za-z0-9]{5}"
+                            class="force-uppercase"
                             required
                         />
                         英数字5文字
@@ -361,7 +362,7 @@
             <div class="power">
                 {{ power !== "" ? `${power} 万` : "" }}
             </div>
-            <div class="id">
+            <div class="id force-uppercase">
                 <span>{{ id }}</span>
             </div>
             <div class="pass">
