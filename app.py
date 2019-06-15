@@ -98,7 +98,6 @@ def log_to_discord(content):
     # )
     # print(res)
 
-
 def check_cast_url(url):
     parsed_url = urlparse(url)
     if (parsed_url.scheme.lower().startswith(HTTP_PREFIXES)
