@@ -1,10 +1,11 @@
 <template>
+    <!-- TODO びろーん -->
     <div class="room-list" :class="roomClass">
         <div class="icon">
             <img :src="room.icon" />
         </div>
         <div class="power">
-            {{ room.power !== "" ? `${room.power} 万` : "" }}
+            {{ room.power ? `${room.power} 万` : "" }}
         </div>
         <div class="id force-uppercase">
             <span v-show="!room.id_edit">{{ room.id }}</span>
@@ -45,9 +46,7 @@
         <div class="time">
             {{ room.time }}
         </div>
-        <div class="ic">
-            {{ room.ic }}
-        </div>
+        <div class="ic">{{ room.items ? "有" : "無" }}/{{ room.fs_charge ? "有" : "無" }}</div>
         <div class="overview">
             {{ room.overview }}
         </div>
@@ -72,8 +71,8 @@
             </span>
         </div>
         <div class="custom-stages">
-            <i class="fas fa-shapes" v-if="room.custom === 'on'" />
-            {{ room.custom === "on" ? (winWidth > 812 ? "自作あり" : "作") : "" }}
+            <i class="fas fa-shapes" v-if="room.custom" />
+            {{ room.custom ? (winWidth > 812 ? "自作あり" : "作") : "" }}
         </div>
         <div class="start-dead">
             {{ room.start }}
@@ -150,36 +149,21 @@ export default {
                 window.sample.editpass,
                 clientData.clientUuid,
                 this.room.room_uuid,
-                {
-                    member: parseInt(this.room.member, 10) + 1
-                }
+                { member: parseInt(this.room.member, 10) + 1 }
             );
         },
         /**
          * メンバーを減算し、メンバーが0になった場合は削除する。
          */
         subMember() {
-            if (window.sample.roomFlag === false) return;
-
-            if (parseInt(this.room.member, 10) === 1) {
-                window.socket.emit(
-                    "delete",
-                    window.sample.editpass,
-                    clientData.clientUuid,
-                    this.room.room_uuid
-                );
-                window.sample.roomFlag = false;
-            } else {
-                window.socket.emit(
-                    "update",
-                    window.sample.editpass,
-                    clientData.clientUuid,
-                    this.room.room_uuid,
-                    {
-                        member: parseInt(this.room.member, 10) - 1
-                    }
-                );
-            }
+            if (parseInt(this.room.member, 10) <= 0) return;
+            window.socket.emit(
+                "update",
+                window.sample.editpass,
+                clientData.clientUuid,
+                this.room.room_uuid,
+                { member: parseInt(this.room.member, 10) - 1 }
+            );
         },
         changeID() {
             if (this.room.new_id !== "" && this.room.new_id.length === 5) {
@@ -188,21 +172,18 @@ export default {
                     window.sample.editpass,
                     clientData.clientUuid,
                     this.room.room_uuid,
-                    {
-                        id: this.room.new_id
-                    }
+                    { id: this.room.new_id }
                 );
             }
             this.room.id_edit = false;
         },
         changeURL() {
             window.socket.emit(
-                "update_cast",
+                "update",
                 window.sample.editpass,
                 clientData.clientUuid,
                 this.room.room_uuid,
-                "cast_url",
-                this.room.new_url
+                { cast_url: this.room.new_url }
             );
             this.room.url_edit = false;
         },

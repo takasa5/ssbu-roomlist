@@ -1,3 +1,5 @@
+@import '~sprite';
+
 body {
     margin: 0 5px;
     background-color: #ffe;
@@ -156,8 +158,29 @@ td {
     max-width: 800px;
 }
 
-.iconlist {
+@include sprites($spritesheet-sprites);
+
+@mixin pixel30-sprite($sprite) {
+    @include sprite-image($sprite);
+    $sprite-offset-x: nth($sprite, 3);
+    $sprite-offset-y: nth($sprite, 4);
+    $sprite-scale-x: 30px / nth($sprite, 5);
+    $sprite-scale-y: 30px / nth($sprite, 6);
     width: 30px;
+    height: 30px;
+    background-size: ($spritesheet-width * $sprite-scale-x) ($spritesheet-height * $sprite-scale-y);
+    background-position: ($sprite-offset-x * $sprite-scale-x) ($sprite-offset-y * $sprite-scale-y);
+}
+
+@each $sprite in $spritesheet-sprites {
+    $sprite-name: nth($sprite, 10);
+    .pixel30-#{$sprite-name} {
+        @include pixel30-sprite($sprite);
+    }
+}
+
+.iconlist {
+    display: inline-block;
     cursor: pointer;
 }
 
@@ -371,4 +394,39 @@ td {
 
 .force-uppercase {
     text-transform: uppercase;
+}
+
+.notification {
+    position: sticky;
+    display: flex;
+    top: 0;
+    left: 0;
+    right: 0;
+    margin: 0 -5px;
+    padding: 5px;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    box-shadow: 0 0 7px #0003;
+    font-size: 16px;
+    line-height: 1;
+    overflow: hidden;
+}
+
+.notification > * {
+    margin: 2.5px;
+}
+
+.notification-closed {
+    display: none;
+}
+
+.notification-icon {
+    color: #4d88d0;
+}
+
+.notification-author {
+    color: #5b5b5b;
+    font-weight: bold;
+    word-break: keep-all;
 }

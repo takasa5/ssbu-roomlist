@@ -97,23 +97,16 @@ window.socketEvent.proxy = (
 };
 
 // Socket ---------------------------------------------------
-window.socket.on("created", data => {
-    window.socketEvent.proxy({
-        eventName: "created",
-        data
-    });
-});
-
-window.socket.on("reconnect", data => {
-    window.socketEvent.proxy({
-        eventName: "reconnect",
-        data
-    });
-});
-
 window.socket.on("updated", data => {
     window.socketEvent.proxy({
         eventName: "updated",
+        data
+    });
+});
+
+window.socket.on("created", data => {
+    window.socketEvent.proxy({
+        eventName: "created",
         data
     });
 });
@@ -128,6 +121,13 @@ window.socket.on("accepted", message => {
 window.socket.on("alert_message", message => {
     window.socketEvent.proxy({
         eventName: "alert_message",
+        data: message
+    });
+});
+
+window.socket.on("pin", message => {
+    window.socketEvent.proxy({
+        eventName: "pin",
         data: message
     });
 });

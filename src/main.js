@@ -64,12 +64,6 @@ const roomListController = {
     }
 };
 
-roomListController.loadList({ detail: currentRooms });
-
-window.socketEvent.addEventListener("reconnect", () => {
-    window.socket.emit("request_update");
-});
-
 window.socketEvent.addEventListener("created", roomListController.create);
 window.socketEvent.addEventListener("updated", roomListController.updateList);
 
@@ -86,6 +80,15 @@ window.socketEvent.addEventListener("accepted", data => {
 
     if ("room_removed" in data.detail) {
         clientData.roomUuid = null;
+    }
+});
+
+window.socketEvent.addEventListener("pin", data => {
+    if (data.detail) {
+        document.getElementById("notification-message").textContent = data.detail;
+        document.getElementById("notification").classList.remove("notification-closed");
+    } else {
+        document.getElementById("notification").classList.add("notification-closed");
     }
 });
 

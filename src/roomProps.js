@@ -28,7 +28,7 @@ export function roomClass(room) {
         full: parseInt(room.member, 10) >= parseInt(room.capacity, 10)
     };
 
-    if (room.custom === "on") {
+    if (room.custom) {
         classes["room-custom"] = true;
     } else {
         switch (room.style) {

@@ -1,10 +1,12 @@
 /* eslint-disable no-console */
 const path = require("path");
 const webpack = require("webpack");
-const CleanWebpackPlugin = require("clean-webpack-plugin");
+const { CleanWebpackPlugin } = require("clean-webpack-plugin");
 const VueLoaderPlugin = require("vue-loader/lib/plugin");
 const TerserPlugin = require("terser-webpack-plugin");
 const Autoprefixer = require("autoprefixer");
+const SpritesmithPlugin = require("webpack-spritesmith");
+
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const { LicenseWebpackPlugin } = require("license-webpack-plugin");
 
@@ -13,7 +15,7 @@ module.exports = {
     entry: {
         "init.js": path.join(__dirname, "src", "init.js"),
         "main.js": path.join(__dirname, "src", "main.js"),
-        "index.css": path.join(__dirname, "src", "index.css")
+        "index.css": path.join(__dirname, "src", "index.scss")
     },
     output: {
         path: path.join(__dirname, "static"),
@@ -45,8 +47,11 @@ module.exports = {
                 loader: "vue-loader"
             },
             {
-                test: /\.css$/,
+                test: /\.s?css$/,
                 include: [path.resolve(__dirname, "src")],
+                resolve: {
+                    extensions: [".scss"]
+                },
                 use: [
                     MiniCssExtractPlugin.loader,
                     "css-loader",
@@ -55,6 +60,12 @@ module.exports = {
                         options: {
                             ident: "postcss",
                             plugins: [Autoprefixer]
+                        }
+                    },
+                    {
+                        loader: "sass-loader",
+                        options: {
+                            includePaths: [path.join(__dirname, "src")]
                         }
                     }
                 ]
@@ -79,6 +90,24 @@ module.exports = {
         new MiniCssExtractPlugin({
             filename: "./[name]",
             chunkFilename: "./[hash:8].chunk"
+        }),
+        new SpritesmithPlugin({
+            src: {
+                cwd: path.join(__dirname, "static", "img"),
+                glob: "{0..105}.jpg"
+            },
+            target: {
+                image: path.join(__dirname, "static", "img", "sprite.png"),
+                css: path.join(__dirname, "src", "sprite.scss")
+            },
+            apiOptions: {
+                cssImageRef: "/img/sprite.png",
+                generateSpriteName: fullPathToSourceFile => {
+                    const { name } = path.parse(fullPathToSourceFile);
+                    return `sprite-${name}`;
+                }
+            },
+            spritesmithOptions: {}
         }),
         new LicenseWebpackPlugin({
             addBanner: true,

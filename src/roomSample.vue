@@ -4,6 +4,9 @@
             <button type="button" @click="inputOnes">
                 1on1入力
             </button>
+            <button type="button" @click="inputTeam">
+                チーム入力
+            </button>
             <button type="button" @click="inputFours">
                 乱闘入力
             </button>
@@ -50,7 +53,7 @@
                     </td>
                     <td>
                         <input
-                            v-model="power"
+                            v-model.number="power"
                             type="number"
                             name="power"
                             size="3"
@@ -119,7 +122,7 @@
                     </td>
                     <td>
                         <input
-                            v-model="stock"
+                            v-model.number="stock"
                             type="number"
                             name="stock"
                             min="1"
@@ -209,33 +212,46 @@
                     </td>
                     <td>
                         <select v-model="custom" name="custom" required>
-                            <option value="on">自作あり</option>
-                            <option value="off">自作なし</option>
+                            <option disabled value>
+                                有無を選択
+                            </option>
+                            <option :value="true">自作あり</option>
+                            <option :value="false">自作なし</option>
                         </select>
                     </td>
                 </tr>
                 <tr>
                     <td class="ftdc">
-                        <b>*アイテム/</b>
-                        <br />
-                        <b>チャージ切り札</b>
+                        <b>*アイテム</b>
                     </td>
                     <td>
-                        <select v-model="ic" name="ic" required>
+                        <select v-model="items" name="items" required>
                             <option disabled value>
                                 有無を選択
                             </option>
-                            <option value="無/無">
-                                無/無
+                            <option :value="true">
+                                あり
                             </option>
-                            <option value="有/無">
-                                有/無
+                            <option :value="false">
+                                なし
                             </option>
-                            <option value="無/有">
-                                無/有
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="ftdc">
+                        <b>*チャージ切り札</b>
+                    </td>
+                    <td>
+                        <select v-model="fs_charge" name="fs_charge" required>
+                            <option disabled value>
+                                有無を選択
                             </option>
-                            <option value="有/有">
-                                有/有
+                            <option :value="true">
+                                あり
+                            </option>
+                            <option :value="false">
+                                なし
                             </option>
                         </select>
                     </td>
@@ -300,13 +316,12 @@
                         <b>アイコン</b>
                     </td>
                     <td>
-                        <img
-                            v-for="img in images"
+                        <i
+                            v-for="(img, i) in images"
                             :key="img"
-                            class="iconlist"
-                            :src="img"
+                            :class="'iconlist pixel30-sprite-' + i"
                             width="30px"
-                            @click="icon = $event.target.src"
+                            @click="icon = img"
                         />
                     </td>
                 </tr>
@@ -360,7 +375,7 @@
                 <img :src="icon" v-if="icon.length > 0" />
             </div>
             <div class="power">
-                {{ power !== "" ? `${power} 万` : "" }}
+                {{ power ? `${power} 万` : "" }}
             </div>
             <div class="id force-uppercase">
                 <span>{{ id }}</span>
@@ -385,9 +400,7 @@
             <div class="time">
                 {{ time }}
             </div>
-            <div class="ic">
-                {{ ic }}
-            </div>
+            <div class="ic">{{ items ? "有" : "無" }}/{{ fs_charge ? "有" : "無" }}</div>
             <div class="overview">
                 {{ overview }}
             </div>
@@ -407,8 +420,8 @@
                 </span>
             </div>
             <div class="custom-stages">
-                <i class="fas fa-shapes" v-if="custom === 'on'" />
-                {{ custom === "on" ? (winWidth > 812 ? "自作あり" : "作") : "" }}
+                <i class="fas fa-shapes" v-if="custom" />
+                {{ custom ? (winWidth > 812 ? "自作あり" : "作") : "" }}
             </div>
             <div class="start-dead">
                 {{ start }}
@@ -465,9 +478,10 @@ const defaultData = () => ({
     stock: "",
     rule: "",
     time: "",
-    ic: "",
+    items: undefined,
+    fs_charge: undefined,
     stage: "",
-    custom: "off",
+    custom: undefined,
     overview: "",
     change: "",
     member: "",
@@ -477,15 +491,15 @@ const defaultData = () => ({
     start: "",
     deadline: "",
     room_uuid: "",
-    id_edit: false,
-    new_id: "",
     temp_string: "",
     success: false,
     roomFlag: false,
-    cast: null,
+    cast: undefined,
     cast_url: "",
+    id_edit: false,
     url_edit: false,
-    new_url: false,
+    new_id: "",
+    new_url: "",
     winWidth: window.innerWidth
 });
 
@@ -530,11 +544,11 @@ export default {
             } else if (this.stage === "ギミック") {
                 tempString += "ギミックありランダム\n";
             } else tempString += `${this.stage}\n`;
-            if (this.custom === "on") {
+            if (this.custom) {
                 tempString += "【自作ステージ】あり\n";
             }
-            tempString += `【アイテム】${this.ic[0]}\n`;
-            tempString += `【チャージ切り札】${this.ic[2]}\n`;
+            tempString += `【アイテム】${this.items ? "あり" : "なし"}\n`;
+            tempString += `【チャージ切り札】${this.fs_charge ? "あり" : "なし"}\n`;
             tempString += `【入れ換え】${this.change}\n`;
             if (this.cast_url.length) {
                 tempString += `【配信URL】${this.cast_url}\n`;
@@ -549,14 +563,15 @@ export default {
             if (!clientData.roomUuid) {
                 window.socket.emit("create", clientData.clientUuid, {
                     icon: this.icon,
-                    power: this.power,
+                    power: parseInt(this.power, 10),
                     id: this.id,
                     pass: this.pass,
                     style: this.style,
-                    stock: this.stock,
+                    stock: parseInt(this.stock, 10),
                     rule: this.rule,
                     time: this.time,
-                    ic: this.ic,
+                    items: this.items,
+                    fs_charge: this.fs_charge,
                     stage: this.stage,
                     custom: this.custom,
                     overview: this.overview,
@@ -582,14 +597,15 @@ export default {
                     clientData.roomUuid,
                     {
                         icon: this.icon,
-                        power: this.power,
+                        power: parseInt(this.power, 10),
                         id: this.id,
                         pass: this.pass,
                         style: this.style,
-                        stock: this.stock,
+                        stock: parseInt(this.stock, 10),
                         rule: this.rule,
                         time: this.time,
-                        ic: this.ic,
+                        items: this.items,
+                        fs_charge: this.fs_charge,
                         stage: this.stage,
                         custom: this.custom,
                         overview: this.overview,
@@ -616,16 +632,32 @@ export default {
             this.stock = "2";
             this.time = "5分";
             this.stage = "終点化";
-            this.ic = "無/無";
+            this.items = false;
+            this.fs_charge = false;
+            this.custom = false;
             this.change = "負け抜け1人";
             this.capacity = 4;
+        },
+        inputTeam() {
+            this.style = "チーム乱闘";
+            this.rule = "ストック制";
+            this.stock = "3";
+            this.time = "7分";
+            this.stage = "ランダム";
+            this.items = false;
+            this.fs_charge = true;
+            this.custom = false;
+            this.change = "負け抜け2人";
+            this.capacity = 6;
         },
         inputFours() {
             this.style = "乱闘";
             this.rule = "タイム制";
             this.time = "3分";
             this.stage = "ギミック";
-            this.ic = "有/有";
+            this.items = true;
+            this.fs_charge = true;
+            this.custom = true;
             this.change = "負け抜け2人";
             this.capacity = 6;
         }

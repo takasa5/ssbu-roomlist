@@ -1,6 +1,7 @@
 {
   "name": "toshibeya",
   "version": "1.0.0",
+  "main": "app.js",
   "license": "UNLICENSED",
   "private": true,
   "browserslist": [
@@ -19,12 +20,12 @@
     "babel-eslint": "^10.0.1",
     "babel-loader": "^8.0.5",
     "browserslist": "^4.5.6",
-    "clean-webpack-plugin": "^2.0.2",
+    "clean-webpack-plugin": "^3.0.0",
     "core-js": "^3.0.1",
-    "css-loader": "^2.1.1",
+    "css-loader": "^3.0.0",
     "eslint": "^5.16.0",
     "eslint-config-airbnb-base": "^13.1.0",
-    "eslint-config-prettier": "^4.2.0",
+    "eslint-config-prettier": "^5.0.0",
     "eslint-import-resolver-webpack": "^0.11.1",
     "eslint-loader": "^2.1.2",
     "eslint-plugin-import": "^2.17.2",
@@ -32,10 +33,12 @@
     "eslint-plugin-prettier": "^3.0.1",
     "eslint-plugin-vue": "^5.2.2",
     "license-webpack-plugin": "^2.1.1",
-    "mini-css-extract-plugin": "^0.6.0",
+    "mini-css-extract-plugin": "^0.7.0",
+    "node-sass": "^4.12.0",
     "postcss": "^7.0.16",
     "postcss-loader": "^3.0.0",
     "prettier": "^1.12.1",
+    "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "stylelint": "^10.0.1",
     "stylelint-config-idiomatic-order": "^7.0.0",
@@ -43,7 +46,7 @@
     "stylelint-config-standard": "^18.2.0",
     "stylelint-no-unsupported-browser-features": "^3.0.1",
     "stylelint-prettier": "^1.0.7",
-    "terser": "^3.17.0",
+    "terser": "^4.0.0",
     "terser-webpack-plugin": "^1.1.0",
     "throttle-debounce": "^2.1.0",
     "vue": "^2.6.10",
@@ -51,6 +54,23 @@
     "vue-template-compiler": "^2.6.10",
     "webpack": "^4.31.0",
     "webpack-cli": "^3.3.2",
-    "webpack-dev-server": "^3.1.14"
+    "webpack-dev-server": "^3.1.14",
+    "webpack-spritesmith": "^1.0.1"
+  },
+  "dependencies": {
+    "discord.js": "^11.5.1",
+    "node-fetch": "^2.6.0",
+    "polka": "^0.5.2",
+    "sirv": "^0.4.2",
+    "socket.io": "^2.2.0",
+    "ua-parser-js": "^0.7.20",
+    "vue-server-renderer": "^2.6.10"
+  },
+  "engines": {
+    "node": "^12.4.0",
+    "yarn": "^1.17.0"
+  },
+  "scripts": {
+    "start": "node app"
   }
 }
