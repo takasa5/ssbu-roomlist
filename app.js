@@ -3,7 +3,7 @@ const http = require("http");
 // Polka サーバーのライブラリ
 const polka = require("polka");
 // 静的ファイルをキャッシュするためのミドルウェア
-const sirv = require("sirv");
+const serveStatic = require("serve-static");
 
 // カスタムロガー
 const logger = require("./lib/logger");
@@ -12,6 +12,16 @@ const ioApp = require("./lib/ioApp")({ logger });
 // Discord から操作するための Bot
 const backyardBot = require("./lib/backyardBot")({ logger });
 
+// 拾ってないエラーのハンドリング
+process.on("uncaughtException", (err, origin) => {
+    logger.error(0, `Uncaught exception: ${err}\nOrigin: ${origin}`);
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+    logger.error(0, `Unhandled exception at: ${promise}\nReason: ${reason}`);
+});
+
+// backyardBot を紐付け
 logger.bindBackyard(backyardBot);
 
 logger.debug(0, "Modules loaded.");
@@ -25,7 +35,7 @@ const server = http.createServer();
 logger.debug(0, "HTTP server created.");
 
 // static フォルダから静的ファイルを読み込む。
-const statics = sirv("static", { cacheControl: false });
+const statics = serveStatic("static");
 
 logger.debug(0, "Sirv instance created.");
 

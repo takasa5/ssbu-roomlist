@@ -49,7 +49,7 @@ footer {
 }
 
 .room-custom {
-    border-color: #baef89;
+    border-color: #5ed8c8;
 }
 
 .room-brawl {
@@ -278,7 +278,7 @@ td {
     }
 
     .room-custom::before {
-        border-top-color: #baef89;
+        border-top-color: #5ed8c8;
     }
 
     .room-brawl::before {
@@ -411,6 +411,7 @@ td {
     font-size: 16px;
     line-height: 1;
     overflow: hidden;
+    z-index: 1;
 }
 
 .notification > * {

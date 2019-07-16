@@ -94,7 +94,7 @@ module.exports = {
         new SpritesmithPlugin({
             src: {
                 cwd: path.join(__dirname, "static", "img"),
-                glob: "{0..105}.jpg"
+                glob: "{0..106}.jpg"
             },
             target: {
                 image: path.join(__dirname, "static", "img", "sprite.png"),
